@@ -12,13 +12,23 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import controllers.TravelingSalesManController;
+import services.TravelingSalesManService;
+import views.TravelingSalesManView;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 public class Home extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-
+	
+	//dependencies of the application initialization
+	TravelingSalesManService salesManService;
+	TravelingSalesManView salesManView;
+	TravelingSalesManController salesManController;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -90,12 +100,48 @@ public class Home extends JFrame {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					// TODO Auto-generated method stub
-					//TODO need to complete from here
+					switch (e.getComponent().getName()) {
+					case "ticTacToeIcon":
+						//TODO tic-tac-toe game controller method
+						JOptionPane.showMessageDialog(null, "not implemented");
+						break;
+					case "salesManIcon":
+						//TODO traveling sales man game controller method
+						salesManController.showView();
+						break;
+					case "hanoiIcon":
+						//TODO tower of hanoi game controller method
+						JOptionPane.showMessageDialog(null, "not implemented");
+						break;
+					case "queensIcon":
+						//TODO eight queens game controller method
+						JOptionPane.showMessageDialog(null, "not implemented");
+						break;
+					case "knightsIcon":
+						//TODO knights tour game controller method
+						JOptionPane.showMessageDialog(null, "not implemented");
+						break;
+					default:
+						JOptionPane.showMessageDialog(null, "game is not defined");
+						break;
+					}
+					
 				}
 			});
 			getContentPane().add(iconPane);
 		}
-
+		
+		//method to initialize dependencies
+		this.initializeDependencies();
+	}
+	
+	/**
+	 *  method for initialize dependencies
+	 */
+	private void initializeDependencies() {
+		this.salesManService = new TravelingSalesManService();
+		this.salesManView = new TravelingSalesManView();
+		this.salesManController = new TravelingSalesManController(salesManService, salesManView);
 	}
 
 }
