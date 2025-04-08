@@ -2,6 +2,8 @@
 
 public class Main {
 	public static void main(String[] args) {
-		System.out.println("Application is successfully started");
+		//start home screen
+		Home home = new Home();
+		home.setVisible(true);
 	}
 }
