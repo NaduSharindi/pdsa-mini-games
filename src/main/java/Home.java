@@ -107,6 +107,7 @@ public class Home extends JFrame {
 						break;
 					case "salesManIcon":
 						//TODO traveling sales man game controller method
+						initializeDependencies();
 						salesManController.showView();
 						break;
 					case "hanoiIcon":

@@ -23,6 +23,15 @@ public class TravelingSalesManController {
 	 * UI method for show view
 	 */
 	public void showView() {
+		this.view.initUI();
 		this.view.setVisible(true);
+	}
+	
+
+	/**
+	 * Initialize UI component
+	 */
+	public void initUI() {
+		
 	}
 }
