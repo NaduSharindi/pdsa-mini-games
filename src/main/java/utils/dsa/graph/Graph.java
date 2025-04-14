@@ -2,6 +2,7 @@ package utils.dsa.graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -57,5 +58,22 @@ public class Graph<T> {
 	 */
 	public List<Edge<T>> getNeighbors(T vertex){
 		return adjList.getOrDefault(vertex, new ArrayList<>());
+	}
+	
+	/**
+	 * Get a single edge from graph. If there is no such a edge its returns null
+	 * 
+	 * @param source
+	 * @param destination
+	 * @return
+	 */
+	public Edge<T> getEdge(T source, T destination){
+		List<Edge<T>> edgesList = this.getNeighbors(source);
+		for(Edge<T> edge: edgesList) {
+			if(edge.getDestination().equals(destination)) {
+				return edge;
+			}
+		}
+		return null;
 	}
 }
