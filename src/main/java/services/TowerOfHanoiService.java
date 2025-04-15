@@ -1,107 +1,220 @@
 package services;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import utils.dsa.Stack;
-import views.TowerOfHanoiView;
-import views.TowerOfHanoiView.PegPanel;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class TowerOfHanoiService {
-
-    private Stack<JPanel> pegA;
-    private Stack<JPanel> pegB;
-    private Stack<JPanel> pegC;
-    private int moveCounter = 0;
-
-    public TowerOfHanoiService() {
-        pegA = new Stack<>();
-        pegB = new Stack<>();
-        pegC = new Stack<>();
+    // Constants
+    private static final int MIN_DISKS = 5;
+    private static final int MAX_DISKS = 10;
+    
+    /**
+     * Generate random number of disks between 5 and 10
+     */
+    public int generateRandomDisks() {
+        Random random = new Random();
+        return random.nextInt(MAX_DISKS - MIN_DISKS + 1) + MIN_DISKS;
     }
-
-    public void initializeDiscs(int numberOfDiscs) {
-        pegA = new Stack<>();
-        pegB = new Stack<>();
-        pegC = new Stack<>();
-
-        for (int i = numberOfDiscs; i >= 1; i--) {
-            JPanel disc = createDisc(i);
-            pegA.push(disc);
-        }
+    
+    /**
+     * Calculate minimum moves required: 2^n - 1
+     */
+    public int calculateMinMoves(int numberOfDisks) {
+        return (int)Math.pow(2, numberOfDisks) - 1;
     }
-
-    public void resetGame() {
-        pegA = new Stack<>();
-        pegB = new Stack<>();
-        pegC = new Stack<>();
-        moveCounter = 0;
+    
+    /**
+     * Recursive solution for Tower of Hanoi
+     * @return List of moves in sequence
+     */
+    public List<Move> solveRecursive(int n, char source, char auxiliary, char destination) {
+        List<Move> moves = new ArrayList<>();
+        solveRecursiveHelper(n, source, auxiliary, destination, moves);
+        return moves;
     }
-
-    public void solveHanoi(int n, Stack<JPanel> source, Stack<JPanel> target, Stack<JPanel> auxiliary, TowerOfHanoiView view) throws InterruptedException {
+    
+    private void solveRecursiveHelper(int n, char source, char auxiliary, char destination, List<Move> moves) {
         if (n == 1) {
-            moveDisc(source, target);
-            moveCounter++;
-            updateView(view);
+            moves.add(new Move(source, destination));
             return;
         }
-
-        solveHanoi(n - 1, source, auxiliary, target, view);
-        moveDisc(source, target);
-        moveCounter++;
-        updateView(view);
-        solveHanoi(n - 1, auxiliary, target, source, view);
+        
+        solveRecursiveHelper(n-1, source, destination, auxiliary, moves);
+        moves.add(new Move(source, destination));
+        solveRecursiveHelper(n-1, auxiliary, source, destination, moves);
     }
-
-    private void moveDisc(Stack<JPanel> source, Stack<JPanel> target) {
-        if (!source.isEmpty()) {
-            target.push(source.pop());
+    
+    /**
+     * Iterative solution using custom Stack data structure
+     * @return List of moves in sequence
+     */
+    public List<Move> solveIterative(int n, char source, char auxiliary, char destination) {
+        List<Move> moves = new ArrayList<>();
+        
+        // For even number of disks, swap auxiliary and destination
+        if (n % 2 == 0) {
+            char temp = destination;
+            destination = auxiliary;
+            auxiliary = temp;
         }
-    }
-
-    private void updateView(TowerOfHanoiView view) throws InterruptedException {
-        SwingUtilities.invokeLater(() -> {
-            view.renderPegs(pegA, pegB, pegC);
-            view.updateMoveCounter(moveCounter);
-        });
-        Thread.sleep(500); // Slow down for visualization
-    }
-
-    private JPanel createDisc(int size) {
-        JPanel disc = new JPanel();
-        int width = 30 + size * 20;
-        int height = 20;
-        disc.setPreferredSize(new Dimension(width, height));
-        Color color;
-        switch (size) {
-            case 1:
-                color = new Color(204, 255, 204); // Light Green (Smallest)
-                break;
-            case 2:
-                color = new Color(0, 255, 127);   // Spring Green (Medium)
-                break;
-            case 3:
-                color = new Color(221, 160, 221); // Plum (Largest)
-                break;
-            default:
-                color = Color.LIGHT_GRAY;
-                break;
+        
+        // Initialize three stacks for the pegs
+        Stack<Integer>[] pegs = new Stack[3];
+        for (int i = 0; i < 3; i++) {
+            pegs[i] = new Stack<>();
         }
-        disc.setBackground(color);
-        disc.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        return disc;
+        
+        // Initialize source peg with disks
+        for (int i = n; i > 0; i--) {
+            pegs[0].push(i);
+        }
+        
+        int totalMoves = calculateMinMoves(n);
+        
+        for (int move = 1; move <= totalMoves; move++) {
+            int src, dst;
+            
+            if (n % 2 == 1) {
+                // For odd number of disks
+                if (move % 3 == 1) {
+                    src = 0; dst = 2; // source to destination
+                } else if (move % 3 == 2) {
+                    src = 0; dst = 1; // source to auxiliary
+                } else {
+                    src = 1; dst = 2; // auxiliary to destination
+                }
+            } else {
+                // For even number of disks
+                if (move % 3 == 1) {
+                    src = 0; dst = 1; // source to auxiliary
+                } else if (move % 3 == 2) {
+                    src = 0; dst = 2; // source to destination
+                } else {
+                    src = 1; dst = 2; // auxiliary to destination
+                }
+            }
+            
+            // Legal move: either peg src is empty, or top disk of peg src is smaller than that of peg dst
+            if (pegs[src].isEmpty()) {
+                // Move disk from dst to src
+                int disk = pegs[dst].pop();
+                pegs[src].push(disk);
+                moves.add(new Move(getCharFromIndex(dst), getCharFromIndex(src)));
+            } else if (pegs[dst].isEmpty() || pegs[src].peek() < pegs[dst].peek()) {
+                // Move disk from src to dst
+                int disk = pegs[src].pop();
+                pegs[dst].push(disk);
+                moves.add(new Move(getCharFromIndex(src), getCharFromIndex(dst)));
+            } else {
+                // Move disk from dst to src
+                int disk = pegs[dst].pop();
+                pegs[src].push(disk);
+                moves.add(new Move(getCharFromIndex(dst), getCharFromIndex(src)));
+            }
+        }
+        
+        return moves;
     }
-
-    // Getters
-    public Stack<JPanel> getPegA() {
-        return pegA;
+    
+    private char getCharFromIndex(int index) {
+        return (char)('A' + index);
     }
-
-    public Stack<JPanel> getPegB() {
-        return pegB;
+    
+    /**
+     * Frame-Stewart algorithm for 4 pegs
+     */
+    public List<Move> solveFrameStewart(int n, char source, char aux1, char aux2, char destination) {
+        List<Move> moves = new ArrayList<>();
+        
+        // Calculate optimal k value (approximate solution)
+        int k = (int)Math.sqrt(2 * n);
+        
+        if (n == 0) return moves;
+        if (n == 1) {
+            moves.add(new Move(source, destination));
+            return moves;
+        }
+        
+        // Move top k disks from source to aux1 using all 4 pegs
+        moves.addAll(solveFrameStewart(n-k, source, aux2, destination, aux1));
+        
+        // Move remaining disks from source to destination using 3 pegs
+        moves.addAll(solveRecursive(k, source, aux2, destination));
+        
+        // Move the (n-k) disks from aux1 to destination using all 4 pegs
+        moves.addAll(solveFrameStewart(n-k, aux1, source, aux2, destination));
+        
+        return moves;
     }
-
-    public Stack<JPanel> getPegC() {
-        return pegC;
+    
+    /**
+     * Validate a sequence of moves using custom Stack implementation
+     * @return true if the sequence correctly solves the puzzle
+     */
+    public boolean validateMoveSequence(List<Move> moves, int diskCount) {
+        // Initialize the three pegs using custom Stack
+        Stack<Integer>[] pegs = new Stack[3];
+        for (int i = 0; i < 3; i++) {
+            pegs[i] = new Stack<>();
+        }
+        
+        // Initialize source peg with disks
+        for (int i = diskCount; i > 0; i--) {
+            pegs[0].push(i);
+        }
+        
+        // Apply each move and validate
+        for (Move move : moves) {
+            int srcIndex = move.getSource() - 'A';
+            int dstIndex = move.getDestination() - 'A';
+            
+            // Validate source peg has disks
+            if (pegs[srcIndex].isEmpty()) {
+                return false;
+            }
+            
+            // Get the top disk from source
+            int disk = pegs[srcIndex].peek();
+            
+         // Inside validateMoveSequence method
+         // Validate destination can accept this disk
+         if (!pegs[dstIndex].isEmpty() && pegs[srcIndex].peek() > pegs[dstIndex].peek()) {
+             return false; // Cannot place larger disk on smaller disk
+         }
+            
+            // Move the disk
+            pegs[dstIndex].push(pegs[srcIndex].pop());
+        }
+        
+        // Check if all disks are on the destination peg
+        return pegs[0].isEmpty() && pegs[1].isEmpty() && pegs[2].size() == diskCount;
+    }
+    
+    /**
+     * Move class to represent a single move
+     */
+    public static class Move {
+        private char source;
+        private char destination;
+        
+        public Move(char source, char destination) {
+            this.source = source;
+            this.destination = destination;
+        }
+        
+        public char getSource() { 
+            return source; 
+        }
+        
+        public char getDestination() { 
+            return destination; 
+        }
+        
+        @Override
+        public String toString() {
+            return source + "->" + destination;
+        }
     }
 }
