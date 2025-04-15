@@ -39,6 +39,14 @@ public class Stack<T> {
 	}
 	
     /**
+     * Removes all of the elements.
+     * .
+     */
+    public void clear() {
+        items.clear();
+    }
+	
+    /**
      * Looks at object at top of this stack without removing it
      *
      * @return 
