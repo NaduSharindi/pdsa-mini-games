@@ -1,8 +1,11 @@
 package controllers;
 
 import java.awt.event.ActionListener;
+import java.security.PrivateKey;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 
@@ -68,17 +71,24 @@ public class TravelingSalesManController {
 	 * Initialize buttons listeners
 	 */
 	public void initializeBtnsListeners() {
+		// source toggle button listeners
 		for (JToggleButton btn : this.view.getSourceCitiesBtn()) {
 			btn.addActionListener(event -> {
 				sourceBtnAction(btn);
 			});
 		}
 
+		// destination toggle button listeners
 		for (JToggleButton btn : this.view.getDestinationCitiesBtn()) {
 			btn.addActionListener(event -> {
 				destinationBtnAction(btn);
 			});
 		}
+
+		// find shortest path button listener
+		this.view.getShortestPathBtn().addActionListener(event -> {
+			findShortestPathBtnAction(this.view.getShortestPathBtn());
+		});
 	}
 
 	/**
@@ -87,7 +97,7 @@ public class TravelingSalesManController {
 	 * @param btn
 	 */
 	private void sourceBtnAction(JToggleButton btn) {
-		//check any destination button is selected before source city is selected
+		// check any destination button is selected before source city is selected
 		for (JToggleButton currentBtn : this.view.getDestinationCitiesBtn()) {
 			if (currentBtn.isSelected()) {
 				btn.setSelected(false);
@@ -96,8 +106,8 @@ public class TravelingSalesManController {
 				return;
 			}
 		}
-		
-		//source btn action
+
+		// source btn action
 		btn.setSelected(true);
 		deSelectToggles(btn, this.view.getSourceCitiesBtn());
 
@@ -126,6 +136,15 @@ public class TravelingSalesManController {
 			return;
 		}
 
+		// check user selected manually home city
+		if (this.view.getUserSourceTxtBx().getText().substring(this.view.getUserSourceTxtBx().getText().length() - 1)
+				.equals(btn.getName())) {
+			btn.setSelected(false);
+			JOptionPane.showMessageDialog(view, "game will automatically select home return path", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		// get the user selected distance
 		String userSelectedPath = this.view.getUserSelectedPathTxtBx().getText();
 
@@ -135,33 +154,51 @@ public class TravelingSalesManController {
 					.substring(this.view.getUserSourceTxtBx().getText().length() - 1);
 			String destinationVertex = btn.getName();
 
-			// check if source has edge to destination and source and destination are similar
+			// check if source has edge to destination and source and destination are
+			// similar
 			Double edgeWeight = this.service.getWeight(sourceVertex, destinationVertex);
-			if (edgeWeight == null) {
+			Double edgeReturnWeight = this.service.getWeight(destinationVertex, sourceVertex);
+			
+			if (edgeWeight == null || edgeReturnWeight == null) {
 				btn.setSelected(false);
 				JOptionPane.showMessageDialog(view,
 						"City " + sourceVertex + " to City " + destinationVertex + " has no path to travel", "Error",
 						JOptionPane.ERROR_MESSAGE);
 				return;
-			} else if (edgeWeight == 0) {
+			} else if (edgeWeight == 0 || edgeReturnWeight == 0) {
 				btn.setSelected(false);
 				JOptionPane.showMessageDialog(view,
 						"City " + sourceVertex + " and City " + destinationVertex + " are similar", "Error",
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			this.view.getUserSelectedPathTxtBx().setText(sourceVertex + "-" + destinationVertex + ",\n");
 			
-			//calculate user selected path distance
-			
+			//set user selected path
+			this.view.getUserSelectedPathTxtBx().setText(
+					sourceVertex + "-" + destinationVertex + ",\n" + destinationVertex + "-" + sourceVertex + ",\n");
+
+			// calculate user selected path distance
+			if (this.view.getUserDistanceTxtBx().getText().isEmpty()) {
+				this.view.getUserDistanceTxtBx().setText(String.valueOf(edgeWeight + edgeReturnWeight));
+			} else {
+				try {
+					this.view.getUserDistanceTxtBx().setText(String
+							.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) + edgeWeight + edgeReturnWeight));
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		} else {
 			String[] pairs = userSelectedPath.split(",\n");
-			String sourceVertex = pairs[pairs.length - 1].split("-")[1];
+			String sourceVertex = pairs[pairs.length - 1].split("-")[0];
 			String destinationVertex = btn.getName();
 
-			// check if source has edge to destination and source and destination are similar
+			// check if source has edge to destination and source and destination are
+			// similar
 			Double edgeWeight = this.service.getWeight(sourceVertex, destinationVertex);
-			if (edgeWeight == null) {
+			Double edgeReturnWeight = this.service.getWeight(destinationVertex, pairs[pairs.length - 1].split("-")[1]);
+			Double oldReturnWeight = this.service.getWeight(sourceVertex, pairs[pairs.length - 1].split("-")[1]);
+			if (edgeWeight == null || edgeReturnWeight == null || oldReturnWeight == null) {
 				btn.setSelected(false);
 				JOptionPane.showMessageDialog(view,
 						"City " + sourceVertex + " to City " + destinationVertex + " has no path to travel", "Error",
@@ -174,10 +211,59 @@ public class TravelingSalesManController {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			this.view.getUserSelectedPathTxtBx().setText(
-					this.view.getUserSelectedPathTxtBx().getText() + sourceVertex + "-" + destinationVertex + ",\n");
+			//set selected user path
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < pairs.length; i++) {
+				if(i == pairs.length - 1) {
+					sb.append(sourceVertex + "-" + destinationVertex + ",\n");
+					sb.append(destinationVertex + "-" + pairs[pairs.length - 1].split("-")[1] + ",\n");
+					break;
+				}
+				sb.append(pairs[i] + ",\n");
+			}
 			
-			//calculate user selected path distance
+			this.view.getUserSelectedPathTxtBx().setText(sb.toString());
+
+			// calculate user selected path distance
+			if (this.view.getUserDistanceTxtBx().getText().isEmpty()) {
+				this.view.getUserDistanceTxtBx().setText(String.valueOf(edgeWeight + edgeReturnWeight - oldReturnWeight ));
+			} else {
+				try {
+					this.view.getUserDistanceTxtBx().setText(String
+							.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) + edgeWeight + edgeReturnWeight - oldReturnWeight));
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * find shortest path button actions
+	 * 
+	 * @param btn
+	 */
+	private void findShortestPathBtnAction(JButton btn) {
+		// check user is select any source city and destination cities
+		if (this.view.getUserSelectedPathTxtBx().getText().isEmpty()) {
+			JOptionPane.showMessageDialog(view, "select destination cities", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// show JOPtionPane algorithm to select algorithm through the user
+		String[] choices = { "Brute Force Algorithm", "Nearest Neighbor Algorithm", "Genetic Algorithm" };
+		JComboBox<String> combobox = new JComboBox<String>(choices);
+
+		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(view, combobox, "Select an algorithm",
+				JOptionPane.OK_CANCEL_OPTION)) {
+			switch ((String) combobox.getSelectedItem()) {
+			case "Brute Force Algorithm":
+				break;
+
+			default:
+				break;
+			}
 		}
 
 	}

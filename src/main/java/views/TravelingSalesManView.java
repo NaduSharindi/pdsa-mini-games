@@ -117,7 +117,6 @@ public class TravelingSalesManView extends JFrame {
 		calcSourceTxtBx.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 
 		calcDistanceTxtBx = new JTextPane();
-		calcDistanceTxtBx.setText("0");
 		calcDistanceTxtBx.setEditable(false);
 		calcDistanceTxtBx.setPreferredSize(new Dimension(110, 30));
 		calcDistanceTxtBx.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
@@ -254,6 +253,9 @@ public class TravelingSalesManView extends JFrame {
 		contentPane.add(controlPanel, BorderLayout.EAST);
 	}
 
+	/**
+	 * getters and setters
+	 */
 	public JToggleButton[] getSourceCitiesBtn() {
 		return sourceCitiesBtn;
 	}
