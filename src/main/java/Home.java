@@ -122,6 +122,7 @@ public class Home extends JFrame {
 						break;
 					case "hanoiIcon":
 						//TODO tower of hanoi game controller method
+						initializeDependencies();
 						hanoiController.showView();
 						break;
 					case "queensIcon":
