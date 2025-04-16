@@ -140,8 +140,8 @@ public class PegPanel extends JPanel {
 
     /**
      * Moves the top disk from one peg to another with validation.
-     * @param sourcePeg The source peg character (e.g., 'A')
-     * @param destPeg The destination peg character (e.g., 'B')
+     * @param sourcePeg The source peg character 
+     * @param destPeg The destination peg character 
      */
     public void moveDisk(char sourcePeg, char destPeg) {
         int sourceIndex = sourcePeg - 'A';

@@ -64,7 +64,7 @@ public class TowerOfHanoiService {
      * Validates a sequence of moves.
      * Ensures no illegal moves and that all disks end up on destination peg.
      */
-    public boolean validateMoveSequence(List<Move> moves, int diskCount) {
+    public boolean validateMoveSequence(List<Move> moves, int diskCount, int algorithmIndex) {
         // Initialize pegs
         Stack<Integer>[] pegs = new Stack[4];
         for (int i = 0; i < 4; i++) {
@@ -91,9 +91,16 @@ public class TowerOfHanoiService {
             pegs[dstIndex].push(pegs[srcIndex].pop());
         }
         
-        // Valid if all disks end up on one peg (typically destination peg)
-        return pegs[0].isEmpty() && pegs[1].isEmpty() && pegs[2].size() == diskCount;
+        // Determine the destination peg based on algorithm
+        int destPegIndex = (algorithmIndex == 2) ? 3 : 2; // Use peg D for Frame-Stewart, peg C otherwise
+        
+        // Valid if all disks end up on the correct destination peg
+        return pegs[0].isEmpty() && pegs[1].isEmpty() && 
+               (algorithmIndex != 2 ? pegs[2].size() == diskCount && pegs[3].isEmpty() : 
+                                      pegs[2].isEmpty() && pegs[3].size() == diskCount);
     }
+    
+    
     
     // Getter methods for solvers
     public RecursiveSolver getRecursiveSolver() {

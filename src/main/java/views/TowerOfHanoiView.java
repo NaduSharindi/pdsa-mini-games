@@ -32,7 +32,7 @@ public class TowerOfHanoiView extends JFrame {
     public TowerOfHanoiView() {
         setTitle("Tower of Hanoi");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1400, 600);
         setLocationRelativeTo(null); // Center the window
         initComponents(); // Initialize all GUI components
     }
@@ -163,7 +163,7 @@ public class TowerOfHanoiView extends JFrame {
         moveSequenceArea.setText(sb.toString());
     }
 
-    // Listener registration methods for external control (MVC pattern)
+    // Listener registration methods for external control 
     public void addSubmitListener(ActionListener listener) {
         submitButton.addActionListener(listener);
     }

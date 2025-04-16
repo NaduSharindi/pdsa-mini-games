@@ -165,24 +165,36 @@ public class TowerOfHanoiController {
             }
 
             // If moves are valid
-            if (service.validateMoveSequence(moves, currentDisks)) {
+            if (service.validateMoveSequence(moves, currentDisks, view.getSelectedAlgorithmIndex())) {
                 // Measure performance of solving algorithms
-                long startTime, endTime;
+            	int algorithmIndex = view.getSelectedAlgorithmIndex();
+                long startTime, algorithmTime = 0;
 
-                startTime = System.nanoTime();
-                List<Move> recursiveSolution = service.solveRecursive(currentDisks, 'A', 'B', 'C');
-                endTime = System.nanoTime();
-                long recursiveTime = (endTime - startTime) / 1000000;
+                
+                List<Move> solution;
 
-                startTime = System.nanoTime();
-                List<Move> iterativeSolution = service.solveIterative(currentDisks, 'A', 'B', 'C');
-                endTime = System.nanoTime();
-                long iterativeTime = (endTime - startTime) / 1000000;
+                switch (algorithmIndex) {
+                    case 0: // Recursive
+                        startTime = System.nanoTime();
+                        solution = service.solveRecursive(currentDisks, 'A', 'B', 'C');
+                        algorithmTime = (System.nanoTime() - startTime) / 1_000_000;
 
-                startTime = System.nanoTime();
-                List<Move> frameStewartSolution = service.solveFrameStewart(currentDisks, 'A', 'B', 'C', 'D');
-                endTime = System.nanoTime();
-                long frameStewartTime = (endTime - startTime) / 1000000;
+                        break;
+                    case 1: // Iterative
+                        startTime = System.nanoTime();
+                        solution = service.solveIterative(currentDisks, 'A', 'B', 'C');
+                        algorithmTime = (System.nanoTime() - startTime) / 1_000_000;
+
+                        break;
+                    case 2: // Frame-Stewart
+                        startTime = System.nanoTime();
+                        solution = service.solveFrameStewart(currentDisks, 'A', 'B', 'C', 'D');
+                        algorithmTime = (System.nanoTime() - startTime) / 1_000_000;
+                        
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid algorithm selection");
+                }
 
                 // Record game session
                 gameHistory.add(new GameSession(playerName, currentDisks, moveCount));
@@ -193,9 +205,7 @@ public class TowerOfHanoiController {
                 result.setNumberOfDisks(currentDisks);
                 result.setNumberOfMoves(moveCount);
                 result.setMoveSequence(moves.stream().map(Move::toString).collect(Collectors.toList()));
-                result.setRecursiveTime(recursiveTime);
-                result.setIterativeTime(iterativeTime);
-                result.setFrameStewartTime(frameStewartTime);
+
                 result.setTimestamp(new Date());
 
                 try {
@@ -203,10 +213,9 @@ public class TowerOfHanoiController {
 
                     // Show result and animation
                     String message = "Correct! Solution saved. Algorithm times:\n" +
-                            "Recursive: " + recursiveTime + "ms\n" +
-                            "Iterative: " + iterativeTime + "ms\n" +
-                            "Frame-Stewart: " + frameStewartTime + "ms";
+                            getAlgorithmName(algorithmIndex) + " time: " + algorithmTime + "ms";
                     view.showResult(true, message);
+                    
                     view.getPegPanel().reset();
                     view.getPegPanel().animateMoves(moves.stream().map(Move::toString).collect(Collectors.toList()));
 
@@ -224,6 +233,15 @@ public class TowerOfHanoiController {
             view.showResult(false, ex.getMessage());
         } catch (Exception ex) {
             view.showResult(false, "An error occurred: " + ex.getMessage());
+        }
+    }
+ // Helper method to get algorithm name
+    private String getAlgorithmName(int index) {
+        switch (index) {
+            case 0: return "Recursive";
+            case 1: return "Iterative";
+            case 2: return "Frame-Stewart";
+            default: return "Unknown Algorithm";
         }
     }
 
