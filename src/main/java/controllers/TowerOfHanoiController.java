@@ -235,7 +235,8 @@ public class TowerOfHanoiController {
             view.showResult(false, "An error occurred: " + ex.getMessage());
         }
     }
- // Helper method to get algorithm name
+    
+    // Helper method to get algorithm name
     private String getAlgorithmName(int index) {
         switch (index) {
             case 0: return "Recursive";
