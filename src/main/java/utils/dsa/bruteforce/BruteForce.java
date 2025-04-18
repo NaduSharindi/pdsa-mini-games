@@ -86,4 +86,11 @@ public class BruteForce<N> {
 		this.bestRoute = bestRoute;
 	}
 
+	public Double getMinDistance() {
+		return minDistance;
+	}
+
+	public void setMinDistance(Double minDistance) {
+		this.minDistance = minDistance;
+	}
 }
