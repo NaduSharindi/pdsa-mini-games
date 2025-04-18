@@ -1,6 +1,7 @@
 package services;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -11,6 +12,7 @@ import utils.constants.TravelingSalesManConstants;
 import utils.dsa.bruteforce.BruteForce;
 import utils.dsa.graph.Edge;
 import utils.dsa.graph.Graph;
+import utils.dsa.heldkarp.HeldKarp;
 
 public class TravelingSalesManService {
 	private Graph<String> graphObj;
@@ -82,10 +84,18 @@ public class TravelingSalesManService {
 		calculatedDistance = algorithm.getMinDistance();
 	}
 
-	public void useHeldKarpAlgorithm() {
-		
+	public void useHeldKarpAlgorithm(List<String> selectedNodes) {
+		HeldKarp<String> algorithm = new HeldKarp<String>(graphObj);
+		algorithm.calculate(selectedNodes);
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < algorithm.getBestRoute().size() - 1; i++) {
+			result.append(algorithm.getBestRoute().get(i)).append("-").append(algorithm.getBestRoute().get(i + 1))
+					.append(",\n");
+		}
+		calculatedPath = result.toString();
+		calculatedDistance = algorithm.getMinCost();
 	}
-	
+
 	/**
 	 * Save win records in database
 	 * 

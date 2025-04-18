@@ -2,6 +2,7 @@ package controllers;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -10,6 +11,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 
 import models.exceptions.DatabaseException;
+import net.bytebuddy.asm.Advice.This;
 import services.TravelingSalesManService;
 import utils.constants.TravelingSalesManConstants;
 import utils.dsa.graph.Edge;
@@ -324,7 +326,20 @@ public class TravelingSalesManController {
 	 * call HeldKarp algorithm
 	 */
 	private void useHeldKarpAlgorithm() {
-		this.service.useHeldKarpAlgorithm();
+		try {
+			// calculate time taken for algorithm
+			long start = System.currentTimeMillis();
+			// run algorithm
+			List<String> userSelectedVertices = this.getUserSelectedVertices();
+			userSelectedVertices.add(0, this.getSourceVertex());
+			this.service.useHeldKarpAlgorithm(userSelectedVertices);
+			long end = System.currentTimeMillis();
+
+			long timeTaken = end - start;
+
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	/**

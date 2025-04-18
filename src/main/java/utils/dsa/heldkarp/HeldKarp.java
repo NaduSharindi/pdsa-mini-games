@@ -20,7 +20,7 @@ public class HeldKarp<N> {
 		minCost = Double.POSITIVE_INFINITY;
 		bestRoute = new ArrayList<>();
 	}
-	
+
 	/**
 	 * Method to calculate the best route and distance
 	 * 
@@ -32,57 +32,67 @@ public class HeldKarp<N> {
 		for (int i = 0; i < n; i++) {
 			cityIndex.put(selectedNodes.get(i), i);
 		}
-		
-        double[][] dp = new double[1 << n][n];
-        int[][] parent = new int[1 << n][n];
-        
-        for (double[] row : dp) Arrays.fill(row, Double.POSITIVE_INFINITY);
-        for (int[] row : parent) Arrays.fill(row, -1);
-        
-        //home city
-        dp[1][0] = 0;
-        
-        for(int mask = 1; mask < (1 << n); mask ++) {
-        	 for (int u = 0; u < n; u++) {
-        		 if ((mask & (1 << u)) == 0) continue;
-        		 
-        		 for (int v = 0; v < n; v++) {
-        			 if ((mask & (1 << v)) != 0 || graph.getEdge(selectedNodes.get(u), selectedNodes.get(v)) == null) continue;
-        			 
-                     int nextMask = mask | (1 << v);
-                     double weight = graph.getEdge(selectedNodes.get(u), selectedNodes.get(v)).getWeight();
-                     if (dp[nextMask][v] > dp[mask][u] + weight) {
-                         dp[nextMask][v] = dp[mask][u] + weight;
-                         parent[nextMask][v] = u;
-                     }
-        		 }
-        	 }
-        }
-        
-        int lastCity = -1;
 
-        for (int i = 1; i < n; i++) {
-            Edge<N> returnEdge = graph.getEdge(selectedNodes.get(i), selectedNodes.get(0));
-            if (returnEdge != null) {
-                double cost = dp[(1 << n) - 1][i] + returnEdge.getWeight();
-                if (cost < minCost) {
-                    minCost = cost;
-                    lastCity = i;
-                }
-            }
-        }
-        
-        // Reconstruct the path
-        int mask = (1 << n) - 1;
-        while (lastCity != -1) {
-        	bestRoute.add(selectedNodes.get(lastCity));
-            int temp = parent[mask][lastCity];
-            mask ^= (1 << lastCity);
-            lastCity = temp;
-        }
-        // return to start
-        bestRoute.add(selectedNodes.get(0));
-        Collections.reverse(bestRoute);
+		double[][] dp = new double[1 << n][n];
+		int[][] parent = new int[1 << n][n];
+
+		for (double[] row : dp)
+			Arrays.fill(row, Double.POSITIVE_INFINITY);
+		for (int[] row : parent)
+			Arrays.fill(row, -1);
+
+		// home city
+		dp[1][0] = 0;
+
+		for (int mask = 1; mask < (1 << n); mask++) {
+			for (int u = 0; u < n; u++) {
+				if ((mask & (1 << u)) == 0)
+					continue;
+
+				for (int v = 0; v < n; v++) {
+					if ((mask & (1 << v)) != 0 || graph.getEdge(selectedNodes.get(u), selectedNodes.get(v)) == null)
+						continue;
+
+					int nextMask = mask | (1 << v);
+					double weight = graph.getEdge(selectedNodes.get(u), selectedNodes.get(v)).getWeight();
+					if (dp[nextMask][v] > dp[mask][u] + weight) {
+						dp[nextMask][v] = dp[mask][u] + weight;
+						parent[nextMask][v] = u;
+					}
+				}
+			}
+		}
+
+		int lastCity = -1;
+
+		for (int i = 1; i < n; i++) {
+			Edge<N> returnEdge = graph.getEdge(selectedNodes.get(i), selectedNodes.get(0));
+			if (returnEdge != null) {
+				double cost = dp[(1 << n) - 1][i] + returnEdge.getWeight();
+				if (cost < minCost) {
+					minCost = cost;
+					lastCity = i;
+				}
+			}
+		}
+
+		// Reconstruct the path
+		int mask = (1 << n) - 1;
+		while (lastCity != -1) {
+			bestRoute.add(selectedNodes.get(lastCity));
+			int temp = parent[mask][lastCity];
+			mask ^= (1 << lastCity);
+			lastCity = temp;
+		}
+
+		Collections.reverse(bestRoute);
+		// Ensure path starts with the original start city
+		if (!bestRoute.get(0).equals(selectedNodes.get(0))) {
+			bestRoute.add(0, selectedNodes.get(0));
+		}
+
+		// Return to start
+		bestRoute.add(selectedNodes.get(0));
 	}
 
 	public List<N> getBestRoute() {
