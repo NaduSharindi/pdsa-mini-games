@@ -79,12 +79,19 @@ public class TravelingSalesManView extends JFrame {
 	 * Initialize game components and layout
 	 */
 	public void initUI() {
+		//clear the panel to remove old components when restarting the game
+		contentPane.removeAll();
+		
 		// initialize game components
 		sourceCitiesBtn = new JToggleButton[TravelingSalesManConstants.NO_OF_SOURCE_CITIES];
+		
 		destinationCitiesBtn = new JToggleButton[TravelingSalesManConstants.NO_OF_DESTINATION_CITIES];
+		
 		weightsLbl = new JLabel[TravelingSalesManConstants.NO_OF_SOURCE_CITIES][TravelingSalesManConstants.NO_OF_DESTINATION_CITIES];
+		
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
+		
 		controlPanel = new JPanel();
 		controlPanel.setPreferredSize(new Dimension(250, 200));
 		controlPanel.setMaximumSize(new Dimension(250, 200));
@@ -149,30 +156,37 @@ public class TravelingSalesManView extends JFrame {
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES; i++) {
 			for (int j = 0; j < TravelingSalesManConstants.NO_OF_DESTINATION_CITIES; j++) {
 				String cityName = "" + (char) (i + 65) + (char) (j + 65);
-				weightsLbl[i][j] = new JLabel(cityName);
+				weightsLbl[i][j] = new JLabel("");
 				weightsLbl[i][j].setName(cityName);
 			}
 		}
 
 		// initialize game UI
-		// placing source cities, destination cities and weight labels
+		// placing source cities, destination cities and weight labels into grid panel
 		JPanel gridPanel = new JPanel(new GridLayout(TravelingSalesManConstants.NO_OF_SOURCE_CITIES + 1,
 				TravelingSalesManConstants.NO_OF_DESTINATION_CITIES + 1));
 
 		// assign JLabels to the grid panel
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES + 1; i++) {
 			for (int j = 0; j < TravelingSalesManConstants.NO_OF_DESTINATION_CITIES + 1; j++) {
+				//add source cities buttons
 				if (j == 0 && i != TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(sourceCitiesBtn[i]);
-				} else if (j == 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
+				} 
+				//add JPanel to the last row and first column to avoid conflicting with destination buttons
+				else if (j == 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(new JPanel());
-				} else if (j > 0 && i != TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
+				} 
+				//add JLabels to grid panel
+				else if (j > 0 && i != TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					JPanel weightPnl = new JPanel(new BorderLayout());
 					JPanel wrapperPnl = new JPanel(new FlowLayout(FlowLayout.CENTER));
 					wrapperPnl.add(weightsLbl[i][j - 1], BorderLayout.CENTER);
 					weightPnl.add(wrapperPnl);
 					gridPanel.add(weightPnl);
-				} else if (j > 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
+				} 
+				//add destination buttons to grid panel
+				else if (j > 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(destinationCitiesBtn[j - 1]);
 				}
 			}

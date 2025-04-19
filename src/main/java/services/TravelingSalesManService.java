@@ -3,6 +3,7 @@ package services;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import models.entities.TravelingSalesManResult;
@@ -36,14 +37,15 @@ public class TravelingSalesManService {
 		graphObj = new Graph<String>();
 		Random rand = new Random();
 
-		// initialize graph with sources, destinations and random numbers
+		// initialize graph with sources, destinations and random weights
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES; i++) {
 			for (int j = 0; j < TravelingSalesManConstants.NO_OF_DESTINATION_CITIES; j++) {
+				String sourceCity = String.valueOf((char) (i + 65));
+				String destinationCity = String.valueOf((char) (j + 65));
 				if (i > j) {
-					graphObj.addEdge(String.valueOf((char) (i + 65)), String.valueOf((char) (j + 65)),
-							rand.nextInt(51) + 50, false);
+					graphObj.addEdge(sourceCity, destinationCity, rand.nextInt(51) + 50, false);
 				} else if (i == j) {
-					graphObj.addEdge(String.valueOf((char) (i + 65)), String.valueOf((char) (j + 65)), 0, true);
+					graphObj.addEdge(sourceCity, destinationCity, 0, true);
 				}
 			}
 		}
@@ -60,11 +62,9 @@ public class TravelingSalesManService {
 	 */
 	public Double getWeight(String source, String destination) {
 		Edge<String> findEdge = this.graphObj.getEdge(source, destination);
-		if (findEdge != null) {
-			return findEdge.getWeight();
-		} else {
-			return null;
-		}
+		if (findEdge == null)
+			throw new NoSuchElementException("edge is not found for given source and destination");
+		return findEdge.getWeight();
 	}
 
 	/**
@@ -102,6 +102,12 @@ public class TravelingSalesManService {
 		calculatedDistance = algorithm.getMinCost();
 	}
 
+	/**
+	 * Use genetic algorithm to solve and find the shortest path
+	 * 
+	 * @param sourceVertex
+	 * @param selectedVertices
+	 */
 	public void useGeneticAlgorithm(String sourceVertex, List<String> selectedVertices) {
 		Genetic<String> algorithm = new Genetic<String>(graphObj);
 		algorithm.calculate(selectedVertices, sourceVertex);

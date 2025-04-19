@@ -150,6 +150,7 @@ public class Home extends JFrame {
 	 *  method for initialize dependencies
 	 */
 	private void initializeDependencies() {
+		//Traveling salesman dependencies
 		this.salesManService = new TravelingSalesManService();
 		this.salesManView = new TravelingSalesManView();
 		this.salesManController = new TravelingSalesManController(salesManService, salesManView);
