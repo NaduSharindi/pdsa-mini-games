@@ -10,6 +10,7 @@ import models.exceptions.DatabaseException;
 import utils.DatabaseConnection;
 import utils.constants.TravelingSalesManConstants;
 import utils.dsa.bruteforce.BruteForce;
+import utils.dsa.genetic.Genetic;
 import utils.dsa.graph.Edge;
 import utils.dsa.graph.Graph;
 import utils.dsa.heldkarp.HeldKarp;
@@ -84,6 +85,11 @@ public class TravelingSalesManService {
 		calculatedDistance = algorithm.getMinDistance();
 	}
 
+	/**
+	 * Use Held-Karp Algorithm to solve the shortest path
+	 * 
+	 * @param selectedNodes
+	 */
 	public void useHeldKarpAlgorithm(List<String> selectedNodes) {
 		HeldKarp<String> algorithm = new HeldKarp<String>(graphObj);
 		algorithm.calculate(selectedNodes);
@@ -94,6 +100,18 @@ public class TravelingSalesManService {
 		}
 		calculatedPath = result.toString();
 		calculatedDistance = algorithm.getMinCost();
+	}
+
+	public void useGeneticAlgorithm(String sourceVertex, List<String> selectedVertices) {
+		Genetic<String> algorithm = new Genetic<String>(graphObj);
+		algorithm.calculate(selectedVertices, sourceVertex);
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < algorithm.getBestRoute().size() - 1; i++) {
+			result.append(algorithm.getBestRoute().get(i)).append("-").append(algorithm.getBestRoute().get(i + 1))
+					.append(",\n");
+		}
+		calculatedPath = result.toString();
+		calculatedDistance = algorithm.getMinDistance();
 	}
 
 	/**
@@ -121,9 +139,6 @@ public class TravelingSalesManService {
 		DatabaseConnection dc = DatabaseConnection.getInstance();
 		dc.getDatastore()
 				.save(new TravelingSalesManResult(playerName, algorithm, sourceVertex, destinationCities, timeTaken));
-	}
-
-	public void useGeneticAlgorithm() {
 	}
 
 	public String getCalculatedPath() {
