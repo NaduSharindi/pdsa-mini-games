@@ -1,17 +1,17 @@
 package controllers;
 
-
-
 import java.awt.event.ActionListener;
-import java.security.PrivateKey;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
- 
 
+import models.exceptions.DatabaseException;
+import net.bytebuddy.asm.Advice.This;
 import services.TravelingSalesManService;
 import utils.constants.TravelingSalesManConstants;
 import utils.dsa.graph.Edge;
@@ -161,7 +161,7 @@ public class TravelingSalesManController {
 			// similar
 			Double edgeWeight = this.service.getWeight(sourceVertex, destinationVertex);
 			Double edgeReturnWeight = this.service.getWeight(destinationVertex, sourceVertex);
-			
+
 			if (edgeWeight == null || edgeReturnWeight == null) {
 				btn.setSelected(false);
 				JOptionPane.showMessageDialog(view,
@@ -175,8 +175,8 @@ public class TravelingSalesManController {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			
-			//set user selected path
+
+			// set user selected path
 			this.view.getUserSelectedPathTxtBx().setText(
 					sourceVertex + "-" + destinationVertex + ",\n" + destinationVertex + "-" + sourceVertex + ",\n");
 
@@ -185,8 +185,9 @@ public class TravelingSalesManController {
 				this.view.getUserDistanceTxtBx().setText(String.valueOf(edgeWeight + edgeReturnWeight));
 			} else {
 				try {
-					this.view.getUserDistanceTxtBx().setText(String
-							.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) + edgeWeight + edgeReturnWeight));
+					this.view.getUserDistanceTxtBx()
+							.setText(String.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText())
+									+ edgeWeight + edgeReturnWeight));
 				} catch (NumberFormatException e) {
 					JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				}
@@ -214,26 +215,28 @@ public class TravelingSalesManController {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			//set selected user path
+			// set selected user path
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < pairs.length; i++) {
-				if(i == pairs.length - 1) {
+				if (i == pairs.length - 1) {
 					sb.append(sourceVertex + "-" + destinationVertex + ",\n");
 					sb.append(destinationVertex + "-" + pairs[pairs.length - 1].split("-")[1] + ",\n");
 					break;
 				}
 				sb.append(pairs[i] + ",\n");
 			}
-			
+
 			this.view.getUserSelectedPathTxtBx().setText(sb.toString());
 
 			// calculate user selected path distance
 			if (this.view.getUserDistanceTxtBx().getText().isEmpty()) {
-				this.view.getUserDistanceTxtBx().setText(String.valueOf(edgeWeight + edgeReturnWeight - oldReturnWeight ));
+				this.view.getUserDistanceTxtBx()
+						.setText(String.valueOf(edgeWeight + edgeReturnWeight - oldReturnWeight));
 			} else {
 				try {
-					this.view.getUserDistanceTxtBx().setText(String
-							.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) + edgeWeight + edgeReturnWeight - oldReturnWeight));
+					this.view.getUserDistanceTxtBx()
+							.setText(String.valueOf(Double.parseDouble(this.view.getUserDistanceTxtBx().getText())
+									+ edgeWeight + edgeReturnWeight - oldReturnWeight));
 				} catch (NumberFormatException e) {
 					JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				}
@@ -255,20 +258,181 @@ public class TravelingSalesManController {
 		}
 
 		// show JOPtionPane algorithm to select algorithm through the user
-		String[] choices = { "Brute Force Algorithm", "Nearest Neighbor Algorithm", "Genetic Algorithm" };
+		String[] choices = { "Brute Force Algorithm", "Held Karp Algorithm", "Genetic Algorithm" };
 		JComboBox<String> combobox = new JComboBox<String>(choices);
 
 		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(view, combobox, "Select an algorithm",
 				JOptionPane.OK_CANCEL_OPTION)) {
 			switch ((String) combobox.getSelectedItem()) {
 			case "Brute Force Algorithm":
+				useBruteForceAlgorithm();
 				break;
-
+			case "Held Karp Algorithm":
+				useHeldKarpAlgorithm();
+				break;
+			case "Genetic Algorithm":
+				useGeneticAlgorithm();
+				break;
 			default:
 				break;
 			}
 		}
+	}
 
+	/**
+	 * call BruteForceAlgorithm
+	 */
+	private void useBruteForceAlgorithm() {
+		try {
+			// calculate time taken for algorithm
+			long start = System.currentTimeMillis();
+			// run algorithm
+			this.service.useBruteForceAlgorithm(this.getSourceVertex(), this.getUserSelectedVertices());
+			long end = System.currentTimeMillis();
+
+			long timeTaken = end - start;
+
+			// set selected path and distance
+			this.view.getCalcSelectedPathTxtBx().setText(this.service.getCalculatedPath());
+			this.view.getCalcDistanceTxtBx().setText(String.valueOf(this.service.getCalculatedDistance()));
+
+			if (Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) <= this.service
+					.getCalculatedDistance()) {
+				JOptionPane.showMessageDialog(view, "You win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				String playerName = JOptionPane.showInputDialog(view, "Enter your name to save result", "Save Result",
+						JOptionPane.INFORMATION_MESSAGE);
+				if (!playerName.isBlank()) {
+					try {
+						this.service.saveResult("BruteForce Algorithm", timeTaken, playerName,
+								this.view.getCalcSelectedPathTxtBx().getText());
+					} catch (DatabaseException e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (Exception e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+				this.showView();
+
+			} else {
+				JOptionPane.showMessageDialog(view, "Computer win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				this.showView();
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	/**
+	 * call HeldKarp algorithm
+	 */
+	private void useHeldKarpAlgorithm() {
+		try {
+			// calculate time taken for algorithm
+			long start = System.currentTimeMillis();
+			// run algorithm
+			List<String> userSelectedVertices = this.getUserSelectedVertices();
+			userSelectedVertices.add(0, this.getSourceVertex());
+			this.service.useHeldKarpAlgorithm(userSelectedVertices);
+			long end = System.currentTimeMillis();
+
+			long timeTaken = end - start;
+
+			// set selected path and distance
+			this.view.getCalcSelectedPathTxtBx().setText(this.service.getCalculatedPath());
+			this.view.getCalcDistanceTxtBx().setText(String.valueOf(this.service.getCalculatedDistance()));
+
+			if (Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) <= this.service
+					.getCalculatedDistance()) {
+				JOptionPane.showMessageDialog(view, "You win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				String playerName = JOptionPane.showInputDialog(view, "Enter your name to save result", "Save Result",
+						JOptionPane.INFORMATION_MESSAGE);
+				if (!playerName.isBlank()) {
+					try {
+						this.service.saveResult("Held Karp Algorithm", timeTaken, playerName,
+								this.view.getCalcSelectedPathTxtBx().getText());
+					} catch (DatabaseException e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (Exception e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+				this.showView();
+
+			} else {
+				JOptionPane.showMessageDialog(view, "Computer win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				this.showView();
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	/**
+	 * call genetic algorithm
+	 */
+	private void useGeneticAlgorithm() {
+		try {
+			//calculate the time taken for algorithm
+			long start = System.currentTimeMillis();
+			//run algorithm
+			this.service.useGeneticAlgorithm(this.getSourceVertex(), this.getUserSelectedVertices());
+			long end = System.currentTimeMillis();
+	
+			long timeTaken = end - start;
+			
+			//set the selected path and distance
+			this.view.getCalcSelectedPathTxtBx().setText(this.service.getCalculatedPath());
+			this.view.getCalcDistanceTxtBx().setText(String.valueOf(this.service.getCalculatedDistance()));
+			
+			if (Double.parseDouble(this.view.getUserDistanceTxtBx().getText()) <= this.service
+					.getCalculatedDistance()) {
+				JOptionPane.showMessageDialog(view, "You win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				String playerName = JOptionPane.showInputDialog(view, "Enter your name to save result", "Save Result",
+						JOptionPane.INFORMATION_MESSAGE);
+				if (!playerName.isBlank()) {
+					try {
+						this.service.saveResult("Held Karp Algorithm", timeTaken, playerName,
+								this.view.getCalcSelectedPathTxtBx().getText());
+					} catch (DatabaseException e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (Exception e) {
+						JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+				this.showView();
+			} else {
+				JOptionPane.showMessageDialog(view, "Computer win", "Win", JOptionPane.INFORMATION_MESSAGE);
+				this.showView();
+			}
+			
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	/**
+	 * Get user selected source vertex
+	 * 
+	 * @return
+	 */
+	private String getSourceVertex() {
+		return this.view.getCalcSourceTxtBx().getText()
+				.substring(this.view.getCalcSourceTxtBx().getText().length() - 1);
+	}
+
+	/**
+	 * Get user selected vertices
+	 */
+	private List<String> getUserSelectedVertices() {
+		List<String> selectedVertices = new ArrayList<String>();
+		String[] pairs = this.view.getUserSelectedPathTxtBx().getText().split(",\n");
+		for (String currentPair : pairs) {
+			if (currentPair.equals(pairs[pairs.length - 1])) {
+				break;
+			}
+			selectedVertices.add(currentPair.split("-")[1]);
+		}
+		return selectedVertices;
 	}
 
 	/**
