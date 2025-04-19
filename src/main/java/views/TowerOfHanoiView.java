@@ -1,212 +1,342 @@
 package views;
 
 import java.awt.*;
-
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.*;
-import services.TowerOfHanoiService;
+import javax.swing.border.TitledBorder;
 
 /**
- * TowerOfHanoiView - Java Swing-based GUI for the Tower of Hanoi game.
+ * Tower of Hanoi View 
+ * 
  */
-public class TowerOfHanoiView extends JFrame {
+public class TowerOfHanoiView extends JPanel {
     private static final long serialVersionUID = 1L;
 
     // UI Components
-    private JPanel mainPanel;
     private JTextField playerNameField;
     private JLabel diskCountLabel;
+    private JLabel optimalMoveCountLabel;
     private JTextField moveCountField;
     private JTextArea moveSequenceArea;
-    private JButton submitButton;
-    private JButton solveButton;
-    private JButton resetButton;
+    private JButton checkAnswerButton;
+    private JButton newGameButton;
+    private JButton backButton;
+    private JButton autoSolveButton;
+    private JRadioButton threePegsRadio;
+    private JRadioButton fourPegsRadio;
+    private ButtonGroup pegCountGroup;
     private JLabel resultLabel;
-    private JComboBox<String> algorithmSelector;
     private PegPanel pegPanel;
 
     /**
-     * Constructor to initialize the frame
+     * Constructor to initialize the panel
      */
     public TowerOfHanoiView() {
-        setTitle("Tower of Hanoi");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1400, 600);
-        setLocationRelativeTo(null); // Center the window
-        initComponents(); // Initialize all GUI components
+        initComponents();
     }
 
     /**
-     * Initializes and arranges all UI components in the frame
+     * Initializes and arranges all UI components in the panel
      */
     private void initComponents() {
-        // Main container panel
-        mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Top title panel
+        // Top title panel with styled heading
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel titleLabel = new JLabel("Tower of Hanoi Game");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
 
-        // Left panel for input controls
-        JPanel leftPanel = new JPanel(new BorderLayout(10, 10));
+        // Control panel (right side) with grid layout for form elements
+        JPanel controlPanel = new JPanel(new BorderLayout(10, 10));
+        controlPanel.setPreferredSize(new Dimension(300, 400));
+        controlPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(5, 5, 5, 5),
+            BorderFactory.createTitledBorder("Game Controls")
+        ));
 
-        // Player name input
-        JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        playerPanel.add(new JLabel("Player Name:"));
+        // Game information panel
+        JPanel infoPanel = new JPanel(new GridLayout(4, 1, 5, 6));
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Game Information"));
+
+        // Player name input with label
+        JPanel playerPanel = new JPanel(new BorderLayout(2, 0));
+        playerPanel.add(new JLabel("Player Name:"), BorderLayout.WEST);
         playerNameField = new JTextField(15);
-        playerPanel.add(playerNameField);
+        playerNameField.setPreferredSize(new Dimension(80, 16));
+        playerPanel.add(playerNameField, BorderLayout.CENTER);
+        infoPanel.add(playerPanel);
 
-        // Game configuration controls
-        JPanel gamePanel = new JPanel(new GridLayout(6, 1, 5, 10));
-        diskCountLabel = new JLabel("Number of Disks: ?");
-        diskCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        gamePanel.add(diskCountLabel);
+        // Peg selection panel
+        JPanel pegSelectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pegSelectionPanel.setBorder(BorderFactory.createTitledBorder("Peg Count"));
 
-        // Move count input
-        JPanel moveCountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        moveCountPanel.add(new JLabel("Number of Moves:"));
+        threePegsRadio = new JRadioButton("3 Pegs", true);
+        fourPegsRadio = new JRadioButton("4 Pegs");
+        pegCountGroup = new ButtonGroup();
+        pegCountGroup.add(threePegsRadio);
+        pegCountGroup.add(fourPegsRadio);
+
+        // Style the radio buttons
+        threePegsRadio.setFont(new Font("Arial", Font.PLAIN, 14));
+        fourPegsRadio.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        pegSelectionPanel.add(threePegsRadio);
+        pegSelectionPanel.add(fourPegsRadio);
+        infoPanel.add(pegSelectionPanel);
+
+        // Game status labels (disk count and optimal move count)
+        JPanel statusPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        diskCountLabel = new JLabel("Disks: 0");
+        diskCountLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        //optimalMoveCountLabel = new JLabel("Optimal Moves: 0");
+        //optimalMoveCountLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        statusPanel.add(diskCountLabel);
+        //statusPanel.add(optimalMoveCountLabel);
+        infoPanel.add(statusPanel);
+
+        // Move count input with validation hint
+        JPanel moveCountPanel = new JPanel(new BorderLayout(5, 0));
+        moveCountPanel.add(new JLabel("Your Move Count:"), BorderLayout.WEST);
         moveCountField = new JTextField(5);
-        moveCountPanel.add(moveCountField);
-        gamePanel.add(moveCountPanel);
+        moveCountField.setPreferredSize(new Dimension(50, 22));
+        moveCountPanel.add(moveCountField, BorderLayout.CENTER);
+        infoPanel.add(moveCountPanel);
 
-        // Algorithm selector
-        JPanel algorithmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        algorithmPanel.add(new JLabel("Algorithm:"));
-        algorithmSelector = new JComboBox<>(new String[] {
-            "Recursive (3 pegs)",
-            "Iterative (3 pegs)",
-            "Frame-Stewart (4 pegs)"
-        });
-        algorithmPanel.add(algorithmSelector);
-        gamePanel.add(algorithmPanel);
-
-        // Move sequence input area
-        JLabel moveSeqLabel = new JLabel("Move Sequence (format: A->B, one per line):");
-        moveSeqLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        gamePanel.add(moveSeqLabel);
-
-        moveSequenceArea = new JTextArea(8, 15);
+        // Input area for instructions
+        JPanel instructionPanel = new JPanel(new BorderLayout(0, 5));
+        instructionPanel.setBorder(BorderFactory.createTitledBorder("Move Sequence"));
+        
+        JLabel instructionLabel = new JLabel(
+            "<html>Enter moves in format: A-B, B-C, etc.<br>"  +
+            "Each move should be separated by a comma.</html>"
+        );
+        instructionLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        instructionPanel.add(instructionLabel, BorderLayout.NORTH);
+        
+        // Move sequence text area with scroll capability
+        moveSequenceArea = new JTextArea(8, 20);
         moveSequenceArea.setLineWrap(true);
+        moveSequenceArea.setWrapStyleWord(true);
         JScrollPane scrollPane = new JScrollPane(moveSequenceArea);
-        gamePanel.add(scrollPane);
+        instructionPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Button panel for Submit, Solve, and Reset
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 10, 0));
-        submitButton = new JButton("Submit Answer");
-        solveButton = new JButton("Show Solution");
-        resetButton = new JButton("New Game");
-        buttonPanel.add(submitButton);
-        buttonPanel.add(solveButton);
-        buttonPanel.add(resetButton);
+        // Button panel with consistent styling
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 0, 10));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        
+        checkAnswerButton = new JButton("Check Answer");
+        checkAnswerButton.setBackground(new Color(65, 105, 225));
+        checkAnswerButton.setForeground(Color.WHITE);
+        checkAnswerButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        autoSolveButton = new JButton("Auto Solve");
+        autoSolveButton.setBackground(new Color(255, 140, 0));
+        autoSolveButton.setForeground(Color.WHITE);
+        autoSolveButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        newGameButton = new JButton("New Game");
+        newGameButton.setBackground(new Color(46, 139, 87));
+        newGameButton.setForeground(Color.WHITE);
+        newGameButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        backButton = new JButton("Back to Menu");
+        backButton.setBackground(new Color(178, 34, 34));
+        backButton.setForeground(Color.WHITE);
+        backButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        buttonPanel.add(checkAnswerButton);
+        buttonPanel.add(autoSolveButton);
+        buttonPanel.add(newGameButton);
+        buttonPanel.add(backButton);
 
-        // Result label
-        JPanel resultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Result display panel
+        JPanel resultPanel = new JPanel(new BorderLayout());
+        resultPanel.setBorder(BorderFactory.createTitledBorder("Result"));
         resultLabel = new JLabel("");
-        resultLabel.setForeground(Color.BLUE);
-        resultPanel.add(resultLabel);
+        resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        resultLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        resultPanel.add(resultLabel, BorderLayout.CENTER);
 
-        // Assemble left side of the layout
-        leftPanel.add(playerPanel, BorderLayout.NORTH);
-        leftPanel.add(gamePanel, BorderLayout.CENTER);
-        leftPanel.add(buttonPanel, BorderLayout.SOUTH);
+        // Assemble right control panel
+        controlPanel.add(infoPanel, BorderLayout.NORTH);
+        controlPanel.add(instructionPanel, BorderLayout.CENTER);
+        controlPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Peg display panel (visual representation of pegs/disks)
+        // Create visualization panel (left side)
         pegPanel = new PegPanel();
+        pegPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(5, 5, 5, 5),
+            BorderFactory.createTitledBorder("Tower of Hanoi Visualization")
+        ));
 
-        // Listener to update number of pegs based on selected algorithm
-        algorithmSelector.addActionListener(e -> {
-            if (algorithmSelector.getSelectedIndex() == 2) { // Frame-Stewart
-                pegPanel.setNumberOfPegs(4);
-            } else {
-                pegPanel.setNumberOfPegs(3);
-            }
-        });
+        // Add peg selection listeners
+        ActionListener pegSelectionListener = e -> {
+            int pegCount = getSelectedPegCount();
+            pegPanel.setNumberOfPegs(pegCount);
+            pegPanel.resetPegs();
+        };
+        threePegsRadio.addActionListener(pegSelectionListener);
+        fourPegsRadio.addActionListener(pegSelectionListener);
 
-        // Add all main components to the main panel
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(leftPanel, BorderLayout.WEST);
-        mainPanel.add(pegPanel, BorderLayout.CENTER);
-        mainPanel.add(resultPanel, BorderLayout.SOUTH);
-
-        // Add main panel to frame
-        add(mainPanel);
+        // Add all components to main panel
+        add(titlePanel, BorderLayout.NORTH);
+        add(pegPanel, BorderLayout.CENTER);
+        add(controlPanel, BorderLayout.EAST);
+        add(resultPanel, BorderLayout.SOUTH);
     }
 
     /**
-     * Updates the disk count label and PegPanel visualization.
+     * Gets the selected peg count (3 or 4)
      */
-    public void updateDiskCount(int count) {
-        diskCountLabel.setText("Number of Disks: " + count);
-        pegPanel.setNumberOfDisks(count);
+    public int getSelectedPegCount() {
+        return fourPegsRadio.isSelected() ? 4 : 3;
     }
 
     /**
-     * Displays the result of the game (success/failure) with a message.
+     * Sets the peg count (3 or 4)
      */
-    public void showResult(boolean success, String message) {
-        resultLabel.setText(message);
-        resultLabel.setForeground(success ? new Color(0, 128, 0) : Color.RED);
-    }
-
-    /**
-     * Fills the move sequence area with a list of move steps.
-     */
-    public void displayMoveSequence(List<TowerOfHanoiService.Move> moves) {
-        StringBuilder sb = new StringBuilder();
-        for (TowerOfHanoiService.Move move : moves) {
-            sb.append(move.toString()).append("\n");
+    public void setPegCount(int count) {
+        if (count == 4) {
+            fourPegsRadio.setSelected(true);
+        } else {
+            threePegsRadio.setSelected(true);
         }
-        moveSequenceArea.setText(sb.toString());
-    }
-
-    // Listener registration methods for external control 
-    public void addSubmitListener(ActionListener listener) {
-        submitButton.addActionListener(listener);
-    }
-
-    public void addSolveListener(ActionListener listener) {
-        solveButton.addActionListener(listener);
-    }
-
-    public void addResetListener(ActionListener listener) {
-        resetButton.addActionListener(listener);
-    }
-
-    // Getters for UI input values
-    public String getPlayerName() {
-        return playerNameField.getText();
-    }
-
-    public String getMoveCountText() {
-        return moveCountField.getText();
-    }
-
-    public String getMoveSequenceText() {
-        return moveSequenceArea.getText();
-    }
-
-    public int getSelectedAlgorithmIndex() {
-        return algorithmSelector.getSelectedIndex();
-    }
-
-    public PegPanel getPegPanel() {
-        return pegPanel;
-    }
-
-    public JTextField getMoveCountField() {
-        return moveCountField;
+        pegPanel.setNumberOfPegs(count);
     }
 
     /**
-     * Clears all input fields and result display
+     * Updates the disk count label and visualization
      */
-    public void resetInputs() {
+    public void setDiskCount(int count) {
+        diskCountLabel.setText("Disks: " + count);
+        pegPanel.setDiskCount(count);
+        pegPanel.resetPegs();
+    }
+    
+    /**
+     * Updates the optimal move count label
+     */
+   /* public void setOptimalMoveCount(int count) {
+        optimalMoveCountLabel.setText("Optimal Moves: " + count);
+    }*/
+
+    /**
+     * Gets the player name from input field
+     */
+    public String getPlayerName() {
+        return playerNameField.getText().trim();
+    }
+
+    /**
+     * Gets the move count from input field
+     */
+    public int getMoveCount() {
+        try {
+            return Integer.parseInt(moveCountField.getText().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Sets the move count in the input field
+     */
+    public void setMoveCount(int count) {
+        moveCountField.setText(String.valueOf(count));
+    }
+
+    /**
+     * Gets the move sequence from text area
+     */
+    public String getMoveSequence() {
+        return moveSequenceArea.getText().trim();
+    }
+
+    /**
+     * Sets the move sequence in the text area
+     */
+    public void setMoveSequence(String sequence) {
+        moveSequenceArea.setText(sequence);
+    }
+
+    /**
+     * Resets all game inputs
+     */
+    public void resetGame() {
         moveCountField.setText("");
         moveSequenceArea.setText("");
         resultLabel.setText("");
+        pegPanel.resetPegs();
+    }
+
+    /**
+     * Add listener for check answer button
+     */
+    public void addCheckAnswerListener(ActionListener listener) {
+        checkAnswerButton.addActionListener(listener);
+    }
+
+    /**
+     * Add listener for auto solve button
+     */
+    public void addAutoSolveListener(ActionListener listener) {
+        autoSolveButton.addActionListener(listener);
+    }
+
+    /**
+     * Add listener for new game button
+     */
+    public void addNewGameListener(ActionListener listener) {
+        newGameButton.addActionListener(listener);
+    }
+
+    /**
+     * Add listener for back button
+     */
+    public void addBackListener(ActionListener listener) {
+        backButton.addActionListener(listener);
+    }
+    
+    /**
+     * Add listener for peg selection changes
+     */
+    public void addPegSelectionListener(ActionListener listener) {
+        threePegsRadio.addActionListener(listener);
+        fourPegsRadio.addActionListener(listener);
+    }
+
+    /**
+     * Display message to user
+     */
+    public void showMessage(String message) {
+        resultLabel.setText(message);
+    }
+
+    /**
+     * Sets success message style
+     */
+    public void showSuccess(String message) {
+        resultLabel.setText(message);
+        resultLabel.setForeground(new Color(0, 128, 0));
+    }
+
+    /**
+     * Sets error message style
+     */
+    public void showError(String message) {
+        resultLabel.setText(message);
+        resultLabel.setForeground(new Color(178, 34, 34));
+    }
+
+    /**
+     * Animate the solution using the pegPanel
+     */
+    public void animateSolution(List<String> moves) {
+        pegPanel.animateSolution(moves);
     }
 }
