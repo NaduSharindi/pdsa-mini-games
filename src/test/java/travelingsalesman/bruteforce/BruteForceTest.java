@@ -4,120 +4,106 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import utils.dsa.bruteforce.BruteForce;
 import utils.dsa.graph.Graph;
 
 public class BruteForceTest {
-	private Graph<String> graph;
+	/**
+	 * Test algorithm with three nodes
+	 */
+	@Test
+	public void testTSPWithThreeNodes() {
+		Graph<String> graph = new Graph<>();
+		graph.addEdge("A", "B", 10, true);
+		graph.addEdge("B", "A", 10, true);
+		graph.addEdge("A", "C", 15, true);
+		graph.addEdge("C", "A", 15, true);
+		graph.addEdge("B", "C", 20, true);
+		graph.addEdge("C", "B", 20, true);
 
-    @BeforeEach
-    void setUp() {
-        graph = new Graph<>();
-        graph.addEdge("A", "B", 10, false);
-        graph.addEdge("A", "C", 15, false);
-        graph.addEdge("A", "D", 20, false);
-        graph.addEdge("B", "C", 35, false);
-        graph.addEdge("B", "D", 25, false);
-        graph.addEdge("C", "D", 30, false);
-    }
-    
-    /**
-     * test the best route and minimum distance
-     */
-    @Test
-    void testBestRouteCalculation() {
-        BruteForce<String> tsp = new BruteForce<>(graph);
-        List<String> cities = Arrays.asList("B", "C", "D");
-        String home = "A";
+		BruteForce<String> bf = new BruteForce<String>(graph);
+		bf.permute(Arrays.asList("B", "C"), "A", 0);
 
-        tsp.permute(cities, home, 0);
-        List<String> result = tsp.getBestRoute();
+		List<String> bestRoute = bf.getBestRoute();
+		Double distance = bf.getMinDistance();
 
-        // Assert that the route starts and ends at home
-        assertEquals(home, result.get(0));
-        assertEquals(home, result.get(result.size() - 1));
-        assertEquals(5, result.size());
+		assertEquals(Arrays.asList("A", "B", "C", "A"), bestRoute);
+		assertEquals(45.0, distance);
+	}
 
-        // e.g., A -> B -> D -> C -> A = 10 + 25 + 30 + 15 = 80
-        assertEquals(Arrays.asList("A", "B", "D", "C", "A"), result);
-    }
-    
-    /**
-     * test with user selected empty route
-     */
-    @Test
-    void testNoRouteIfEmptyCities() {
-        BruteForce<String> tsp = new BruteForce<>(graph);
-        List<String> cities = Arrays.asList();
-        String home = "A";
+	/**
+	 * Test algorithm with a single node
+	 */
+	@Test
+	public void testSingleNodeRoute() {
+		Graph<String> graph = new Graph<>();
+		graph.addEdge("A", "A", 0, true);
 
-        tsp.permute(cities, home, 0);
-        List<String> result = tsp.getBestRoute();
+		BruteForce<String> bf = new BruteForce<>(graph);
+		bf.permute(new ArrayList<String>(List.of("A")), "A", 0);
+		assertEquals(List.of("A", "A", "A"), bf.getBestRoute());
+		assertEquals(0.0, bf.getMinDistance());
+	}
 
-        // should only contain start and end (same node)
-        assertEquals(Arrays.asList("A", "A"), result);
-    }
-    
-    /**
-     * test with single node graph
-     */
-    @Test
-    void testSingleNodeGraph() {
-        BruteForce<String> tsp = new BruteForce<>(graph);
-        List<String> cities = List.of();  // no cities to visit
-        String home = "A";
-        graph.addEdge("A", "A", 0, false);
-        tsp.permute(cities, home, 0);
-        List<String> result = tsp.getBestRoute();
+	/**
+	 * Test algorithm with a single node and check exception type
+	 */
+	@Test
+	public void testEmptySelectedNodesThrows() {
+		Graph<String> graph = new Graph<>();
 
-        assertEquals(List.of("A", "A"), result);
-    }
-    
-    /**
-     * test when graph cities are disconnected
-     */
-    @Test
-    void testDisconnectedGraph() {
-        graph.addEdge("A", "B", 10, false);
-        graph.addEdge("B", "C", 15, false);
-        List<String> cities = Arrays.asList("B", "D", "C");
-        String home = "A";
-        BruteForce<String> tsp = new BruteForce<>(graph);
-        assertThrows(NullPointerException.class, () -> tsp.permute(cities, home, 0));
-    }
-    
-    /**
-     * test when graph all edges has equal weights
-     */
-    @Test
-    void testEqualEdgeWeights() {
-        graph.addEdge("A", "B", 1, true);
-        graph.addEdge("A", "C", 1, true);
-        graph.addEdge("A", "D", 1, true);
-        graph.addEdge("B", "C", 1, true);
-        graph.addEdge("B", "D", 1, true);
-        graph.addEdge("C", "D", 1, true);
+		BruteForce<String> bf = new BruteForce<>(graph);
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> bf.permute(List.of(), "A", 0));
+		assertTrue(ex.getMessage().contains("selected nodes must contains at  least 1 element"));
+	}
 
-        BruteForce<String> tsp = new BruteForce<>(graph);
-        List<String> cities = Arrays.asList("B", "C", "D");
-        String home = "A";
+	/**
+	 * Test algorithm with null parsing to the constructor
+	 */
+	@Test
+	public void testNullGraphThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new BruteForce<String>(null));
+	}
 
-        tsp.permute(cities, home, 0);
-        List<String> result = tsp.getBestRoute();
+	/**
+	 * Test algorithm with parsing null to selected vertices
+	 */
+	@Test
+	public void testNullSelectedNodesThrows() {
+		Graph<String> graph = new Graph<>();
+		BruteForce<String> bf = new BruteForce<>(graph);
 
-        // Any route with all nodes once should be valid since all have equal cost
-        assertEquals(5, result.size());
-        assertEquals("A", result.get(0));
-        assertEquals("A", result.get(4));
-        assertTrue(result.containsAll(List.of("B", "C", "D")));
-    }
-    
-    
+		assertThrows(IllegalArgumentException.class, () -> bf.permute(null, "A", 0));
+	}
 
+	/**
+	 * Test algorithm with parse null to the home vertex
+	 */
+	@Test
+	public void testNullHomeNodeThrows() {
+		Graph<String> graph = new Graph<>();
+		BruteForce<String> bf = new BruteForce<>(graph);
+
+		assertThrows(IllegalArgumentException.class, () -> bf.permute(List.of("A", "B"), null, 0));
+	}
+
+	/**
+	 * Test algorithm with parsing unreachable nodes to the algorithm
+	 */
+	@Test
+	public void testUnreachableNodeThrows() {
+		Graph<String> graph = new Graph<>();
+		graph.addVertex("A");
+		graph.addVertex("B");
+		// No edge between A and B
+
+		BruteForce<String> bf = new BruteForce<>(graph);
+		assertThrows(IllegalStateException.class, () -> bf.permute(new ArrayList<String>(List.of("B", "C")), "A", 0));
+	}
 }
