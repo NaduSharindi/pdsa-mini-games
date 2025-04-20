@@ -65,6 +65,8 @@ public class TowerOfHanoiController {
         view.setOptimalMoveCount(moveCount);
     }*/
     
+    //new game listener
+    
     class NewGameListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -72,6 +74,7 @@ public class TowerOfHanoiController {
         }
     }
     
+    //checkAnswer button
     class CheckAnswerListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -112,6 +115,7 @@ public class TowerOfHanoiController {
         }
     }
     
+    // Auto solve button
     class AutoSolveListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {

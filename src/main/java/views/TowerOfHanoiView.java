@@ -16,7 +16,6 @@ public class TowerOfHanoiView extends JPanel {
     // UI Components
     private JTextField playerNameField;
     private JLabel diskCountLabel;
-    private JLabel optimalMoveCountLabel;
     private JTextField moveCountField;
     private JTextArea moveSequenceArea;
     private JButton checkAnswerButton;

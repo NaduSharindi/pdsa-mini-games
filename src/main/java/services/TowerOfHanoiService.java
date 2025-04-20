@@ -36,7 +36,7 @@ public class TowerOfHanoiService {
             this.dbConnection = DatabaseConnection.getInstance();
         } catch (DatabaseException e) {
             System.err.println("Database connection error: " + e.getMessage());
-            this.dbConnection = null; // Or handle appropriately
+            this.dbConnection = null; 
         }
         
         // Continue with other initialization
