@@ -2,7 +2,6 @@ package database;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import com.mongodb.client.model.ReturnDocument;
 
 import dev.morphia.ModifyOptions;
-import dev.morphia.query.filters.Filter;
 import dev.morphia.query.filters.Filters;
 import dev.morphia.query.updates.UpdateOperators;
 import models.entities.TestCollection;

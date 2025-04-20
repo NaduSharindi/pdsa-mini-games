@@ -12,7 +12,6 @@ public class Edge<T> {
 	public Edge() {}
 
 	public Edge(T destination, double weight) {
-		super();
 		this.destination = destination;
 		this.weight = weight;
 	}

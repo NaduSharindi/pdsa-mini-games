@@ -1,8 +1,8 @@
 package services;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import models.entities.TravelingSalesManResult;
@@ -36,14 +36,15 @@ public class TravelingSalesManService {
 		graphObj = new Graph<String>();
 		Random rand = new Random();
 
-		// initialize graph with sources, destinations and random numbers
+		// initialize graph with sources, destinations and random weights
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES; i++) {
 			for (int j = 0; j < TravelingSalesManConstants.NO_OF_DESTINATION_CITIES; j++) {
+				String sourceCity = String.valueOf((char) (i + 65));
+				String destinationCity = String.valueOf((char) (j + 65));
 				if (i > j) {
-					graphObj.addEdge(String.valueOf((char) (i + 65)), String.valueOf((char) (j + 65)),
-							rand.nextInt(51) + 50, false);
+					graphObj.addEdge(sourceCity, destinationCity, rand.nextInt(51) + 50, false);
 				} else if (i == j) {
-					graphObj.addEdge(String.valueOf((char) (i + 65)), String.valueOf((char) (j + 65)), 0, true);
+					graphObj.addEdge(sourceCity, destinationCity, 0, true);
 				}
 			}
 		}
@@ -60,11 +61,9 @@ public class TravelingSalesManService {
 	 */
 	public Double getWeight(String source, String destination) {
 		Edge<String> findEdge = this.graphObj.getEdge(source, destination);
-		if (findEdge != null) {
-			return findEdge.getWeight();
-		} else {
-			return null;
-		}
+		if (findEdge == null)
+			throw new NoSuchElementException("edge is not found for given source and destination");
+		return findEdge.getWeight();
 	}
 
 	/**
@@ -76,12 +75,7 @@ public class TravelingSalesManService {
 	public void useBruteForceAlgorithm(String sourceVertex, List<String> userSelectedVertices) {
 		BruteForce<String> algorithm = new BruteForce<String>(graphObj);
 		algorithm.permute(userSelectedVertices, sourceVertex, 0);
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < algorithm.getBestRoute().size() - 1; i++) {
-			result.append(algorithm.getBestRoute().get(i)).append("-").append(algorithm.getBestRoute().get(i + 1))
-					.append(",\n");
-		}
-		calculatedPath = result.toString();
+		calculatedPath = this.bestRouteToString(algorithm.getBestRoute());
 		calculatedDistance = algorithm.getMinDistance();
 	}
 
@@ -93,25 +87,36 @@ public class TravelingSalesManService {
 	public void useHeldKarpAlgorithm(List<String> selectedNodes) {
 		HeldKarp<String> algorithm = new HeldKarp<String>(graphObj);
 		algorithm.calculate(selectedNodes);
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < algorithm.getBestRoute().size() - 1; i++) {
-			result.append(algorithm.getBestRoute().get(i)).append("-").append(algorithm.getBestRoute().get(i + 1))
-					.append(",\n");
-		}
-		calculatedPath = result.toString();
+		calculatedPath = this.bestRouteToString(algorithm.getBestRoute());
 		calculatedDistance = algorithm.getMinCost();
 	}
 
+	/**
+	 * Use genetic algorithm to solve and find the shortest path
+	 * 
+	 * @param sourceVertex
+	 * @param selectedVertices
+	 */
 	public void useGeneticAlgorithm(String sourceVertex, List<String> selectedVertices) {
 		Genetic<String> algorithm = new Genetic<String>(graphObj);
 		algorithm.calculate(selectedVertices, sourceVertex);
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < algorithm.getBestRoute().size() - 1; i++) {
-			result.append(algorithm.getBestRoute().get(i)).append("-").append(algorithm.getBestRoute().get(i + 1))
-					.append(",\n");
-		}
-		calculatedPath = result.toString();
+		calculatedPath = this.bestRouteToString(algorithm.getBestRoute());
 		calculatedDistance = algorithm.getMinDistance();
+	}
+
+	/**
+	 * Generate best route as a string from best route list
+	 * 
+	 * @param bestRoute
+	 * @return
+	 */
+	private String bestRouteToString(List<String> bestRoute) {
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < bestRoute.size() - 1; i++) {
+			result.append(bestRoute.get(i)).append("-").append(bestRoute.get(i + 1)).append(",\n");
+		}
+
+		return result.toString();
 	}
 
 	/**
