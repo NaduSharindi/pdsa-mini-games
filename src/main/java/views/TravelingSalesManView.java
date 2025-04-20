@@ -5,10 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.Scrollbar;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -43,6 +40,7 @@ public class TravelingSalesManView extends JFrame {
 	private JTextPane calcDistanceTxtBx = null;
 	private JScrollPane calcSelectedPathScroll;
 	private JTextArea calcSelectedPathTxtBx = null;
+	private JButton newGameBtn = null;
 
 	/**
 	 * Launch the application.
@@ -79,19 +77,19 @@ public class TravelingSalesManView extends JFrame {
 	 * Initialize game components and layout
 	 */
 	public void initUI() {
-		//clear the panel to remove old components when restarting the game
+		// clear the panel to remove old components when restarting the game
 		contentPane.removeAll();
-		
+
 		// initialize game components
 		sourceCitiesBtn = new JToggleButton[TravelingSalesManConstants.NO_OF_SOURCE_CITIES];
-		
+
 		destinationCitiesBtn = new JToggleButton[TravelingSalesManConstants.NO_OF_DESTINATION_CITIES];
-		
+
 		weightsLbl = new JLabel[TravelingSalesManConstants.NO_OF_SOURCE_CITIES][TravelingSalesManConstants.NO_OF_DESTINATION_CITIES];
-		
+
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
-		
+
 		controlPanel = new JPanel();
 		controlPanel.setPreferredSize(new Dimension(250, 200));
 		controlPanel.setMaximumSize(new Dimension(250, 200));
@@ -137,6 +135,7 @@ public class TravelingSalesManView extends JFrame {
 		calcSelectedPathScroll = new JScrollPane(calcSelectedPathTxtBx);
 		calcSelectedPathScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
+		newGameBtn = new JButton("New Game");
 		// main panel initialization
 		// Initialize source city buttons
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES; i++) {
@@ -169,23 +168,24 @@ public class TravelingSalesManView extends JFrame {
 		// assign JLabels to the grid panel
 		for (int i = 0; i < TravelingSalesManConstants.NO_OF_SOURCE_CITIES + 1; i++) {
 			for (int j = 0; j < TravelingSalesManConstants.NO_OF_DESTINATION_CITIES + 1; j++) {
-				//add source cities buttons
+				// add source cities buttons
 				if (j == 0 && i != TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(sourceCitiesBtn[i]);
-				} 
-				//add JPanel to the last row and first column to avoid conflicting with destination buttons
+				}
+				// add JPanel to the last row and first column to avoid conflicting with
+				// destination buttons
 				else if (j == 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(new JPanel());
-				} 
-				//add JLabels to grid panel
+				}
+				// add JLabels to grid panel
 				else if (j > 0 && i != TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					JPanel weightPnl = new JPanel(new BorderLayout());
 					JPanel wrapperPnl = new JPanel(new FlowLayout(FlowLayout.CENTER));
 					wrapperPnl.add(weightsLbl[i][j - 1], BorderLayout.CENTER);
 					weightPnl.add(wrapperPnl);
 					gridPanel.add(weightPnl);
-				} 
-				//add destination buttons to grid panel
+				}
+				// add destination buttons to grid panel
 				else if (j > 0 && i == TravelingSalesManConstants.NO_OF_SOURCE_CITIES) {
 					gridPanel.add(destinationCitiesBtn[j - 1]);
 				}
@@ -196,7 +196,7 @@ public class TravelingSalesManView extends JFrame {
 		mainPanel.add(gridPanel, BorderLayout.CENTER);
 
 		// control panel initialization
-		JPanel[] controlRowPnls = new JPanel[5];
+		JPanel[] controlRowPnls = new JPanel[6];
 		for (int i = 0; i < controlRowPnls.length; i++) {
 			controlRowPnls[i] = new JPanel();
 			controlRowPnls[i].setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -258,11 +258,19 @@ public class TravelingSalesManView extends JFrame {
 		controlRowPnls[4].setPreferredSize(new Dimension(250, 150));
 		controlRowPnls[4].setMaximumSize(new Dimension(250, 150));
 
+		JPanel newGameBtnPnl = new JPanel();
+		newGameBtnPnl.setLayout(new BorderLayout());
+		newGameBtnPnl.add(newGameBtn, BorderLayout.SOUTH);
+		controlRowPnls[5].add(newGameBtnPnl);
+		controlRowPnls[5].setPreferredSize(new Dimension(250, 150));
+		controlRowPnls[5].setMaximumSize(new Dimension(250, 150));
+
 		controlPanel.add(controlRowPnls[0]);
 		controlPanel.add(controlRowPnls[1]);
 		controlPanel.add(controlRowPnls[2]);
 		controlPanel.add(controlRowPnls[3]);
 		controlPanel.add(controlRowPnls[4]);
+		controlPanel.add(controlRowPnls[5]);
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		contentPane.add(controlPanel, BorderLayout.EAST);
 	}
@@ -348,5 +356,13 @@ public class TravelingSalesManView extends JFrame {
 
 	public void setCalcSelectedPathTxtBx(JTextArea calcSelectedPathTxtBx) {
 		this.calcSelectedPathTxtBx = calcSelectedPathTxtBx;
+	}
+
+	public JButton getNewGameBtn() {
+		return newGameBtn;
+	}
+
+	public void setNewGameBtn(JButton newGameBtn) {
+		this.newGameBtn = newGameBtn;
 	}
 }

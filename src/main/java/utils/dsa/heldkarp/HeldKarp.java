@@ -15,7 +15,15 @@ public class HeldKarp<N> {
 	List<N> bestRoute;
 	Double minCost;
 
+	/**
+	 * initialize the initial value
+	 * 
+	 * @param graph
+	 */
 	public HeldKarp(Graph<N> graph) {
+		if (graph == null)
+			throw new IllegalArgumentException("graph should not be null");
+
 		this.graph = graph;
 		minCost = Double.POSITIVE_INFINITY;
 		bestRoute = new ArrayList<>();
@@ -27,6 +35,9 @@ public class HeldKarp<N> {
 	 * @param selectedNodes
 	 */
 	public void calculate(List<N> selectedNodes) {
+		if (selectedNodes == null)
+			throw new IllegalArgumentException("selectedNodes should not be null");
+
 		int n = selectedNodes.size();
 		Map<N, Integer> cityIndex = new HashMap<N, Integer>();
 		for (int i = 0; i < n; i++) {
@@ -87,14 +98,21 @@ public class HeldKarp<N> {
 
 		Collections.reverse(bestRoute);
 		// Ensure path starts with the original start city
-		if (!bestRoute.get(0).equals(selectedNodes.get(0))) {
-			bestRoute.add(0, selectedNodes.get(0));
+		if (bestRoute.size() != 0) {
+			if (!bestRoute.get(0).equals(selectedNodes.get(0))) {
+				bestRoute.add(0, selectedNodes.get(0));
+			}
 		}
 
 		// Return to start
 		bestRoute.add(selectedNodes.get(0));
 	}
 
+	/**
+	 * Getters and setters
+	 * 
+	 * @return
+	 */
 	public List<N> getBestRoute() {
 		return bestRoute;
 	}

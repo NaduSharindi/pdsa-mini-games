@@ -96,6 +96,7 @@ public class Graph<T> {
 			throw new IllegalArgumentException("destination vertex can not be null");
 
 		List<Edge<T>> edgesList = this.getNeighbors(source);
+		if(edgesList == null) return null;
 		for (Edge<T> edge : edgesList) {
 			if (edge.getDestination().equals(destination)) {
 				return edge;
