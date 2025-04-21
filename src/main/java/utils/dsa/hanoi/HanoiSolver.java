@@ -1,19 +1,28 @@
 package utils.dsa.hanoi;
 
 import java.util.List;
-import services.TowerOfHanoiService.Move;
 
-/**
- * Interface for Tower of Hanoi solvers
- */
 public interface HanoiSolver {
     /**
-     * Get the name of the solver
+     * Solves the Tower of Hanoi puzzle for 3 pegs
+     * 
+     * @param disks Number of disks
+     * @param source Source peg
+     * @param destination Destination peg
+     * @param auxiliary Auxiliary peg
+     * @param moves List to store the sequence of moves
      */
-    String getName();
+    void solve(int disks, char source, char destination, char auxiliary, List<String> moves);
     
     /**
-     * Calculate minimum number of moves needed
+     * Solves the Tower of Hanoi puzzle for 4 pegs
+     * 
+     * @param disks Number of disks
+     * @param source Source peg
+     * @param destination Destination peg
+     * @param auxiliary1 First auxiliary peg
+     * @param auxiliary2 Second auxiliary peg
+     * @param moves List to store the sequence of moves
      */
-    int calculateMinMoves(int numberOfDisks);
+    void solve(int disks, char source, char destination, char auxiliary1, char auxiliary2, List<String> moves);
 }

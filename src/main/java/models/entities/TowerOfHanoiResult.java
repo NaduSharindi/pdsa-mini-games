@@ -1,10 +1,6 @@
 package models.entities;
 
-import java.util.Date;
-import java.util.List;
-
 import org.bson.types.ObjectId;
-
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 
@@ -13,88 +9,58 @@ public class TowerOfHanoiResult {
     @Id
     private ObjectId id;
     private String playerName;
-    private int numberOfDisks;
-    private int numberOfMoves;
-    private List<String> moveSequence;
+    private int diskCount;
+    private String moveSequence;
+    private int moveCount;
     private long recursiveTime;
     private long iterativeTime;
     private long frameStewartTime;
-    private Date timestamp;
-    
-    // Default constructor required by Morphia
-    public TowerOfHanoiResult() {
+    private int pegCount;
+    private boolean isCorrect;
+
+    // Empty constructor for Morphia
+    public TowerOfHanoiResult() {}
+
+    public TowerOfHanoiResult(String playerName, int diskCount, String moveSequence, 
+                             int moveCount, long recursiveTime, long iterativeTime, 
+                             long frameStewartTime, boolean isCorrect) {
+        this(playerName, diskCount, moveSequence, moveCount, recursiveTime, 
+             iterativeTime, frameStewartTime, 3, isCorrect);
     }
-    
-    // Getters and setters
-    public ObjectId getId() {
-        return id;
-    }
-    
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
-    
-    public String getPlayerName() {
-        return playerName;
-    }
-    
-    public void setPlayerName(String playerName) {
+
+    public TowerOfHanoiResult(String playerName, int diskCount, String moveSequence, 
+                             int moveCount, long recursiveTime, long iterativeTime, 
+                             long frameStewartTime, int pegCount, boolean isCorrect) {
         this.playerName = playerName;
-    }
-    
-    public int getNumberOfDisks() {
-        return numberOfDisks;
-    }
-    
-    public void setNumberOfDisks(int numberOfDisks) {
-        this.numberOfDisks = numberOfDisks;
-    }
-    
-    public int getNumberOfMoves() {
-        return numberOfMoves;
-    }
-    
-    public void setNumberOfMoves(int numberOfMoves) {
-        this.numberOfMoves = numberOfMoves;
-    }
-    
-    public List<String> getMoveSequence() {
-        return moveSequence;
-    }
-    
-    public void setMoveSequence(List<String> moveSequence) {
+        this.diskCount = diskCount;
         this.moveSequence = moveSequence;
-    }
-    
-    public long getRecursiveTime() {
-        return recursiveTime;
-    }
-    
-    public void setRecursiveTime(long recursiveTime) {
+        this.moveCount = moveCount;
         this.recursiveTime = recursiveTime;
-    }
-    
-    public long getIterativeTime() {
-        return iterativeTime;
-    }
-    
-    public void setIterativeTime(long iterativeTime) {
         this.iterativeTime = iterativeTime;
-    }
-    
-    public long getFrameStewartTime() {
-        return frameStewartTime;
-    }
-    
-    public void setFrameStewartTime(long frameStewartTime) {
         this.frameStewartTime = frameStewartTime;
+        this.pegCount = pegCount;
+        this.isCorrect = isCorrect;
     }
-    
-    public Date getTimestamp() {
-        return timestamp;
-    }
-    
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+
+    // Getters and setters
+    public ObjectId getId() { return id; }
+    public void setId(ObjectId id) { this.id = id; }
+    public String getPlayerName() { return playerName; }
+    public void setPlayerName(String playerName) { this.playerName = playerName; }
+    public int getDiskCount() { return diskCount; }
+    public void setDiskCount(int diskCount) { this.diskCount = diskCount; }
+    public String getMoveSequence() { return moveSequence; }
+    public void setMoveSequence(String moveSequence) { this.moveSequence = moveSequence; }
+    public int getMoveCount() { return moveCount; }
+    public void setMoveCount(int moveCount) { this.moveCount = moveCount; }
+    public long getRecursiveTime() { return recursiveTime; }
+    public void setRecursiveTime(long recursiveTime) { this.recursiveTime = recursiveTime; }
+    public long getIterativeTime() { return iterativeTime; }
+    public void setIterativeTime(long iterativeTime) { this.iterativeTime = iterativeTime; }
+    public long getFrameStewartTime() { return frameStewartTime; }
+    public void setFrameStewartTime(long frameStewartTime) { this.frameStewartTime = frameStewartTime; }
+    public int getPegCount() { return pegCount; }
+    public void setPegCount(int pegCount) { this.pegCount = pegCount; }
+    public boolean isCorrect() { return isCorrect; }
+    public void setCorrect(boolean correct) { isCorrect = correct; }
 }

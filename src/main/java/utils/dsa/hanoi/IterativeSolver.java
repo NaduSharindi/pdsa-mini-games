@@ -1,93 +1,52 @@
 package utils.dsa.hanoi;
 
-import java.util.ArrayList;
 import java.util.List;
-import services.TowerOfHanoiService.Move;
 import utils.dsa.Stack;
 
-/**
- * Iterative solution for the classic 3-peg Tower of Hanoi.
- */
 public class IterativeSolver implements HanoiSolver {
     @Override
-    public String getName() {
-        return "Iterative";
+    public void solve(int disks, char source, char destination, char auxiliary, List<String> moves) {
+        Stack<HanoiFrame> stack = new Stack<HanoiFrame>();
+        stack.push(new HanoiFrame(disks, source, destination, auxiliary, 0));
+        
+        while (!stack.isEmpty()) {
+            HanoiFrame frame = stack.pop();
+            
+            if (frame.disks == 1) {
+                moves.add(frame.source + "-" + frame.destination);
+            } else if (frame.stage == 0) {
+                // Push frames in reverse execution order
+                stack.push(new HanoiFrame(frame.disks, frame.source, frame.destination, frame.auxiliary, 1));
+                stack.push(new HanoiFrame(frame.disks - 1, frame.source, frame.auxiliary, frame.destination, 0));
+            } else if (frame.stage == 1) {
+                moves.add(frame.source + "-" + frame.destination);
+                stack.push(new HanoiFrame(frame.disks - 1, frame.auxiliary, frame.destination, frame.source, 0));
+            }
+        }
     }
-    
+
     @Override
-    public int calculateMinMoves(int numberOfDisks) {
-        return (int) Math.pow(2, numberOfDisks) - 1;
+    public void solve(int disks, char source, char destination, char auxiliary1, char auxiliary2, List<String> moves) {
+        // For compatibility - use standard 3-peg solution
+        solve(disks, source, destination, auxiliary1, moves);
     }
     
     /**
-     * Solve the Tower of Hanoi problem iteratively
+     * Helper class to represent a frame in the iterative solution
      */
-    public List<Move> solve(int n, char source, char auxiliary, char destination) {
-        List<Move> moves = new ArrayList<>();
+    private static class HanoiFrame {
+        int disks;
+        char source;
+        char destination;
+        char auxiliary;
+        int stage;
         
-        // Swap auxiliary and destination for even number of disks
-        if (n % 2 == 0) {
-            char temp = destination;
-            destination = auxiliary;
-            auxiliary = temp;
+        public HanoiFrame(int disks, char source, char destination, char auxiliary, int stage) {
+            this.disks = disks;
+            this.source = source;
+            this.destination = destination;
+            this.auxiliary = auxiliary;
+            this.stage = stage;
         }
-        
-        // Initialize pegs
-        Stack<Integer>[] pegs = new Stack[3];
-        for (int i = 0; i < 3; i++) {
-            pegs[i] = new Stack<>();
-        }
-        
-        // Fill source peg with disks (largest disk at bottom)
-        for (int i = n; i > 0; i--) {
-            pegs[0].push(i);
-        }
-        
-        int totalMoves = calculateMinMoves(n);
-        
-        // Perform the moves
-        for (int move = 1; move <= totalMoves; move++) {
-            int src, dst;
-            
-            // Determine which pegs to move between
-            if (n % 2 == 1) { // Odd number of disks
-                if (move % 3 == 1) {
-                    src = 0; dst = 2;
-                } else if (move % 3 == 2) {
-                    src = 0; dst = 1;
-                } else {
-                    src = 1; dst = 2;
-                }
-            } else { // Even number of disks
-                if (move % 3 == 1) {
-                    src = 0; dst = 1;
-                } else if (move % 3 == 2) {
-                    src = 0; dst = 2;
-                } else {
-                    src = 1; dst = 2;
-                }
-            }
-            
-            // Execute the legal move
-            if (pegs[src].isEmpty()) {
-                int disk = pegs[dst].pop();
-                pegs[src].push(disk);
-                moves.add(new Move(getCharFromIndex(dst), getCharFromIndex(src)));
-            } else if (pegs[dst].isEmpty() || pegs[src].peek() < pegs[dst].peek()) {
-                int disk = pegs[src].pop();
-                pegs[dst].push(disk);
-                moves.add(new Move(getCharFromIndex(src), getCharFromIndex(dst)));
-            } else {
-                int disk = pegs[dst].pop();
-                pegs[src].push(disk);
-                moves.add(new Move(getCharFromIndex(dst), getCharFromIndex(src)));
-            }
-        }
-        
-        return moves;
-    }
-    
-    private char getCharFromIndex(int index) {
-        return (char) ('A' + index);
     }
 }

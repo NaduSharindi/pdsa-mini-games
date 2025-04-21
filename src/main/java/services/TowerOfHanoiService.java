@@ -1,143 +1,288 @@
 package services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import utils.dsa.Stack;
-import utils.dsa.hanoi.RecursiveSolver;
-import utils.dsa.hanoi.IterativeSolver;
+import dev.morphia.Datastore;
+import dev.morphia.query.Query;
+import models.entities.TowerOfHanoiResult;
+import models.exceptions.DatabaseException;
+import utils.DatabaseConnection;
 import utils.dsa.hanoi.FrameStewartSolver;
+import utils.dsa.hanoi.HanoiSolver;
+import utils.dsa.hanoi.IterativeSolver;
+import utils.dsa.hanoi.RecursiveSolver;
+import utils.dsa.LinkedList;
 
 public class TowerOfHanoiService {
-    // Constants defining the min and max number of disks
-    private static final int MIN_DISKS = 5;
-    private static final int MAX_DISKS = 10;
-    
-    private RecursiveSolver recursiveSolver;
-    private IterativeSolver iterativeSolver;
-    private FrameStewartSolver frameStewartSolver;
-    
+    private DatabaseConnection dbConnection;
+    private final HanoiSolver recursiveSolver;
+    private final HanoiSolver iterativeSolver;
+    private final HanoiSolver frameStewartSolver;
+    private int currentDiskCount;
+    private int currentPegCount = 3; // Default to 3 pegs
+    private List<String> optimalMoves3Peg;
+    private List<String> optimalMoves4Peg;
+
     public TowerOfHanoiService() {
-        recursiveSolver = new RecursiveSolver();
-        iterativeSolver = new IterativeSolver();
-        frameStewartSolver = new FrameStewartSolver();
+        // Initialize final fields exactly once
+        this.recursiveSolver = new RecursiveSolver();
+        this.iterativeSolver = new IterativeSolver();
+        this.frameStewartSolver = new FrameStewartSolver();
+        
+        // Only database connection in try-catch
+        try {
+            this.dbConnection = DatabaseConnection.getInstance();
+        } catch (DatabaseException e) {
+            System.err.println("Database connection error: " + e.getMessage());
+            this.dbConnection = null; 
+        }
+        
+        // Continue with other initialization
+        generateNewPuzzle();
     }
 
     /**
-     * Generates a random number of disks between MIN_DISKS and MAX_DISKS (inclusive)
+     * Generate a new Tower of Hanoi puzzle with random disk count (5-10)
+     * Calculates solutions for both 3-peg and 4-peg versions
      */
-    public int generateRandomDisks() {
+    public void generateNewPuzzle() {
         Random random = new Random();
-        return random.nextInt(MAX_DISKS - MIN_DISKS + 1) + MIN_DISKS;
+        currentDiskCount = random.nextInt(6) + 5; // Random between 5-10
+        
+        // Generate 3-peg solutions with both algorithms
+        optimalMoves3Peg = new ArrayList<>();
+        recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        
+        // Generate 4-peg solution with Frame-Stewart algorithm
+        optimalMoves4Peg = new ArrayList<>();
+        frameStewartSolver.solve(currentDiskCount, 'A', 'D', 'B', 'C', optimalMoves4Peg);
     }
 
     /**
-     * Calculates the minimum number of moves required to solve the Tower of Hanoi with `n` disks.
-     * Formula: 2^n - 1
+     * Get the current disk count for this puzzle
      */
-    public int calculateMinMoves(int numberOfDisks) {
-        return recursiveSolver.calculateMinMoves(numberOfDisks);
+    public int getCurrentDiskCount() {
+        return currentDiskCount;
     }
 
     /**
-     * Recursive solution for the classic 3-peg Tower of Hanoi.
+     * Get the optimal move count for a given peg count
      */
-    public List<Move> solveRecursive(int n, char source, char auxiliary, char destination) {
-        return recursiveSolver.solve(n, source, auxiliary, destination);
+    public int getOptimalMoveCount(int pegCount) {
+        if (pegCount == 4) {
+            return optimalMoves4Peg.size();
+        } else {
+            return (int) Math.pow(2, currentDiskCount) - 1; // Standard formula for 3 pegs
+        }
     }
 
     /**
-     * Iterative solution using custom Stack data structure.
+     * Get the optimal move count using current peg count
      */
-    public List<Move> solveIterative(int n, char source, char auxiliary, char destination) {
-        return iterativeSolver.solve(n, source, auxiliary, destination);
+    public int getOptimalMoveCount() {
+        return getOptimalMoveCount(currentPegCount);
     }
 
     /**
-     * Frame-Stewart algorithm to solve Tower of Hanoi with 4 pegs (advanced).
+     * Get optimal moves list for a specific peg count
      */
-    public List<Move> solveFrameStewart(int n, char source, char aux1, char aux2, char destination) {
-        return frameStewartSolver.solve(n, source, aux1, aux2, destination);
+    public List<String> getOptimalMoves(int pegCount) {
+        return pegCount == 4 ? optimalMoves4Peg : optimalMoves3Peg;
     }
 
     /**
-     * Validates a sequence of moves.
-     * Ensures no illegal moves and that all disks end up on destination peg.
+     * Get optimal moves list using current peg count
      */
-    public boolean validateMoveSequence(List<Move> moves, int diskCount, int algorithmIndex) {
-        // Initialize pegs
-        Stack<Integer>[] pegs = new Stack[4];
-        for (int i = 0; i < 4; i++) {
-            pegs[i] = new Stack<>();
+    public List<String> getOptimalMoves() {
+        return getOptimalMoves(currentPegCount);
+    }
+
+    /**
+     * Set the current peg count (3 or 4)
+     */
+    public void setPegCount(int pegCount) {
+        this.currentPegCount = (pegCount == 4) ? 4 : 3;
+    }
+
+    /**
+     * Get the current peg count
+     */
+    public int getPegCount() {
+        return currentPegCount;
+    }
+
+    /**
+     * Validate user moves against correct solution for a specific peg count
+     */
+    public boolean validateMoves(List<String> userMoves, int pegCount) {
+        int expectedMoveCount = getOptimalMoveCount(pegCount);
+        
+        if (userMoves.size() != expectedMoveCount) {
+            return false;
+        }
+
+        // Simulation of Tower of Hanoi with user moves
+        char[][] pegs = new char[pegCount][currentDiskCount];
+        int[] topIndex = new int[pegCount]; // Top disk index for each peg
+        
+        // Initialize all pegs as empty except first peg
+        for (int i = 0; i < pegCount; i++) {
+            topIndex[i] = (i == 0) ? currentDiskCount - 1 : -1;
+        }
+
+        // Initialize first peg with all disks
+        for (int i = 0; i < currentDiskCount; i++) {
+            pegs[0][i] = (char)('A' + (currentDiskCount - 1 - i));
+        }
+
+        // Process each move
+        for (String move : userMoves) {
+            if (move.length() != 3 || move.charAt(1) != '-' || 
+                move.charAt(0) < 'A' || move.charAt(0) >= ('A' + pegCount) || 
+                move.charAt(2) < 'A' || move.charAt(2) >= ('A' + pegCount)) {
+                return false; // Invalid format or peg reference
+            }
+
+            int fromPeg = move.charAt(0) - 'A';
+            int toPeg = move.charAt(2) - 'A';
+
+            if (fromPeg == toPeg || topIndex[fromPeg] == -1) {
+                return false; // Invalid move
+            }
+
+            char diskToMove = pegs[fromPeg][topIndex[fromPeg]];
+
+            // Check if destination has smaller disk
+            if (topIndex[toPeg] >= 0 && pegs[toPeg][topIndex[toPeg]] < diskToMove) {
+                return false; // Larger disk on smaller one
+            }
+
+            // Move the disk
+            pegs[fromPeg][topIndex[fromPeg]] = 0;
+            topIndex[fromPeg]--;
+            topIndex[toPeg]++;
+            pegs[toPeg][topIndex[toPeg]] = diskToMove;
+        }
+
+        // Check if all disks moved to destination peg C using 3 pegs and peg D using 4 pegs
+        return topIndex[pegCount == 4 ? 3 : 2] == currentDiskCount - 1;
+    }
+
+    /**
+     * Original validateMoves method for backward compatibility
+     */
+    public boolean validateMoves(List<String> userMoves) {
+        return validateMoves(userMoves, currentPegCount);
+    }
+
+    /**
+     * Check a user's answer for correctness with specified peg count
+     */
+    public boolean checkAnswer(String playerName, int moveCount, String moveSequence, int pegCount) {
+        // Parse move sequence
+        String[] moves = moveSequence.split(",");
+        List<String> userMoves = new ArrayList<>();
+        for (String move : moves) {
+            userMoves.add(move.trim());
+        }
+
+        int expectedMoveCount = getOptimalMoveCount(pegCount);
+        boolean isCorrect = validateMoves(userMoves, pegCount) && moveCount == expectedMoveCount;
+
+        // Time algorithms
+        long recursiveTime = 0, iterativeTime = 0, frameStewartTime = 0;
+        long startTime;
+        
+        // For 3-peg version, time both recursive and iterative algorithms
+        if (pegCount == 3) {
+            List<String> recursiveMoves = new ArrayList<>();
+            startTime = System.nanoTime();
+            recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', recursiveMoves);
+            recursiveTime = System.nanoTime() - startTime;
+            
+            List<String> iterativeMoves = new ArrayList<>();
+            startTime = System.nanoTime();
+            iterativeSolver.solve(currentDiskCount, 'A', 'C', 'B', iterativeMoves);
+            iterativeTime = System.nanoTime() - startTime;
         }
         
-        // Fill source peg
-        for (int i = diskCount; i > 0; i--) {
-            pegs[0].push(i);
+        // Always time Frame-Stewart for comparison
+        List<String> frameStewartMoves = new ArrayList<>();
+        startTime = System.nanoTime();
+        frameStewartSolver.solve(currentDiskCount, 'A', 'D', 'B', 'C', frameStewartMoves);
+        frameStewartTime = System.nanoTime() - startTime;
+
+        // Save to database if correct
+        if (isCorrect && dbConnection != null) {
+            TowerOfHanoiResult result = new TowerOfHanoiResult(
+                playerName, currentDiskCount, moveSequence, moveCount,
+                recursiveTime, iterativeTime, frameStewartTime, pegCount, true
+            );
+            
+            try {
+                dbConnection.save(result);
+            } catch (DatabaseException e) {
+                System.err.println("Failed to save result: " + e.getMessage());
+            }
+        }
+
+        return isCorrect;
+    }
+
+    /**
+     * Original checkAnswer method for backward compatibility
+     */
+    public boolean checkAnswer(String playerName, int moveCount, String moveSequence) {
+        return checkAnswer(playerName, moveCount, moveSequence, currentPegCount);
+    }
+
+    /**
+     * Get all saved results from the database
+     */
+    public List<TowerOfHanoiResult> getAllResults() {
+        if (dbConnection == null) {
+            return new ArrayList<>();
         }
         
-        // Execute moves and validate each one
-        for (Move move : moves) {
-            int srcIndex = move.getSource() - 'A';
-            int dstIndex = move.getDestination() - 'A';
+        try {
+            Datastore datastore = dbConnection.getDatastore();
+            Query<TowerOfHanoiResult> query = datastore.find(TowerOfHanoiResult.class);
+            return query.iterator().toList();
+        } catch (Exception e) {
+            System.err.println("Error retrieving results: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Get algorithm timing data for analysis and reporting
+     * @param diskCount Specific disk count to filter results (0 for all)
+     * @param pegCount Specific peg count to filter results (0 for all)
+     * @return List of timing results
+     */
+    public List<TowerOfHanoiResult> getTimingResults(int diskCount, int pegCount) {
+        if (dbConnection == null) {
+            return new ArrayList<>();
+        }
+        
+        try {
+            Datastore datastore = dbConnection.getDatastore();
+            Query<TowerOfHanoiResult> query = datastore.find(TowerOfHanoiResult.class);
             
-            if (pegs[srcIndex].isEmpty()) return false;
-            
-            int disk = pegs[srcIndex].peek();
-            if (!pegs[dstIndex].isEmpty() && pegs[srcIndex].peek() > pegs[dstIndex].peek()) {
-                return false;
+            if (diskCount > 0) {
+                query = query.field("diskCount").equal(diskCount);
             }
             
-            pegs[dstIndex].push(pegs[srcIndex].pop());
-        }
-        
-        // Determine the destination peg based on algorithm
-        int destPegIndex = (algorithmIndex == 2) ? 3 : 2; // Use peg D for Frame-Stewart, peg C otherwise
-        
-        // Valid if all disks end up on the correct destination peg
-        return pegs[0].isEmpty() && pegs[1].isEmpty() && 
-               (algorithmIndex != 2 ? pegs[2].size() == diskCount && pegs[3].isEmpty() : 
-                                      pegs[2].isEmpty() && pegs[3].size() == diskCount);
-    }
-    
-    
-    
-    // Getter methods for solvers
-    public RecursiveSolver getRecursiveSolver() {
-        return recursiveSolver;
-    }
-    
-    public IterativeSolver getIterativeSolver() {
-        return iterativeSolver;
-    }
-    
-    public FrameStewartSolver getFrameStewartSolver() {
-        return frameStewartSolver;
-    }
-
-    /**
-     * Inner class to represent a single move from one peg to another.
-     */
-    public static class Move {
-        private char source;
-        private char destination;
-        
-        public Move(char source, char destination) {
-            this.source = source;
-            this.destination = destination;
-        }
-        
-        public char getSource() {
-            return source;
-        }
-        
-        public char getDestination() {
-            return destination;
-        }
-        
-        @Override
-        public String toString() {
-            return source + "->" + destination;
+            if (pegCount > 0) {
+                query = query.field("pegCount").equal(pegCount);
+            }
+            
+            return query.iterator().toList();
+        } catch (Exception e) {
+            System.err.println("Error retrieving timing results: " + e.getMessage());
+            return new ArrayList<>();
         }
     }
 }
