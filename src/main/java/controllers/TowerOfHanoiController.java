@@ -19,15 +19,6 @@ public class TowerOfHanoiController {
         this.service = service;
         this.view = view;
         
-        // Initialize listeners
-        this.view.addNewGameListener(new NewGameListener());
-        this.view.addCheckAnswerListener(new CheckAnswerListener());
-        this.view.addAutoSolveListener(new AutoSolveListener());
-        this.view.addBackListener(e -> hideView());
-        
-        // Add peg selection listener to update the optimal move count when peg count changes
-        //this.view.addPegSelectionListener(e -> updateOptimalMoveCount());
-        
         // Setup frame for view
         frame = new JFrame("Tower of Hanoi");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -35,8 +26,23 @@ public class TowerOfHanoiController {
         frame.add(view);
         frame.setLocationRelativeTo(null);
         
+        
+        // Initialize listeners
+        this.view.addNewGameListener(new NewGameListener());
+        this.view.addCheckAnswerListener(new CheckAnswerListener());
+        this.view.addAutoSolveListener(new AutoSolveListener());
+        this.view.addBackListener(e -> hideView());
+        
+        // Add peg selection listener to update the optimal move count when peg count changes
+        this.view.addPegSelectionListener(e -> {
+            int pegCount = view.getSelectedPegCount();
+            service.setPegCount(pegCount);
+            newGame();
+        });
+        
         // Initialize the game
         newGame();
+        
     }
 
     public void showView() {
@@ -48,11 +54,20 @@ public class TowerOfHanoiController {
     }
 
     private void newGame() {
+    	 service.setPegCount(view.getSelectedPegCount());
         service.generateNewPuzzle();
         int diskCount = service.getCurrentDiskCount();
         view.setDiskCount(diskCount);
         view.resetGame();
         //updateOptimalMoveCount();
+        
+        // Show algorithm based on peg count
+        int pegCount = service.getPegCount();
+        if (pegCount == 4) {
+            view.showAlgorithmMessage("Frame-Stewart");
+        } else {
+            view.showAlgorithmMessage(service.getCurrent3PegAlgorithm());
+        }
     }
     
     /**
@@ -73,6 +88,8 @@ public class TowerOfHanoiController {
             newGame();
         }
     }
+    
+    
     
     //checkAnswer button
     class CheckAnswerListener implements ActionListener {
@@ -109,6 +126,14 @@ public class TowerOfHanoiController {
             if (isCorrect) {
                 view.showSuccess("Congratulations! Your answer is correct.");
                 view.animateSolution(service.getOptimalMoves(pegCount));
+                
+             // Show which algorithm and time
+                TowerOfHanoiResult lastResult = service.getLastResult();
+                if (pegCount == 4) {
+                    view.showAlgoSessionMsg("Frame-Stewart", lastResult.getFrameStewartTime());
+                } else {
+                    view.showAlgoSessionMsg(service.getCurrent3PegAlgorithm(), lastResult.getRecursiveTime());
+                }
             } else {
                 view.showError("Sorry, your answer is incorrect. Try again.");
             }
@@ -139,6 +164,13 @@ public class TowerOfHanoiController {
             
             // Animate the solution
             view.animateSolution(solutionMoves);
+            
+            TowerOfHanoiResult lastResult = service.getLastResult();
+            if (pegCount == 4) {
+                view.showAlgoSessionMsg("Frame-Stewart", lastResult.getFrameStewartTime());
+            } else {
+                view.showAlgoSessionMsg(service.getCurrent3PegAlgorithm(), lastResult.getRecursiveTime());
+            }
             
             // Show success message with algorithm info
             String algorithmInfo = pegCount == 3 ? 

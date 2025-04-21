@@ -27,6 +27,7 @@ public class TowerOfHanoiView extends JPanel {
     private ButtonGroup pegCountGroup;
     private JLabel resultLabel;
     private PegPanel pegPanel;
+    private JLabel algoTimeLabel;
 
     /**
      * Constructor to initialize the panel
@@ -160,6 +161,11 @@ public class TowerOfHanoiView extends JPanel {
         resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
         resultLabel.setFont(new Font("Arial", Font.BOLD, 14));
         resultPanel.add(resultLabel, BorderLayout.CENTER);
+        
+        algoTimeLabel = new JLabel("");
+        algoTimeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        algoTimeLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+        resultPanel.add(algoTimeLabel, BorderLayout.SOUTH);
 
         // Assemble right control panel
         controlPanel.add(infoPanel, BorderLayout.NORTH);
@@ -188,6 +194,24 @@ public class TowerOfHanoiView extends JPanel {
         add(controlPanel, BorderLayout.EAST);
         add(resultPanel, BorderLayout.SOUTH);
     }
+    
+    public void showAlgorithmMessage(String algorithm) {
+        resultLabel.setText("Current algorithm: " + algorithm);
+        resultLabel.setForeground(new Color(0, 0, 255)); // Blue text
+    }
+    
+ 
+    public void showAlgoSessionMsg(String algorithm, long timeNs) {
+        double timeMs = timeNs / 1_000_000.0; // Convert nanoseconds to milliseconds
+        String message = String.format("%s algorithm took %.3f ms", algorithm, timeMs);
+        resultLabel.setText(message);
+    }
+
+    public void clearAlgoSessionMsg() {
+        resultLabel.setText("");
+    }
+
+
 
     /**
      * Gets the selected peg count (3 or 4)

@@ -50,5 +50,18 @@ public class TowerOfHanoiServiceTest {
         var wrongMoves = Arrays.asList("A-B", "B-C"); // Too short, obviously wrong
         assertFalse(service.validateMoves(wrongMoves, 3), "Incorrect moves should be invalid");
     }
+    
+    @Test
+    void testAlgorithmAlternation() {
+    	//Test that selection of algorithms alternatively
+        TowerOfHanoiService service = new TowerOfHanoiService();
+        service.setPegCount(3);
+        service.generateNewPuzzle();
+        String algo1 = service.getCurrent3PegAlgorithm();
+        service.generateNewPuzzle();
+        String algo2 = service.getCurrent3PegAlgorithm();
+        assertNotEquals(algo1, algo2, "Algorithm should alternate between recursive and iterative");
+    }
+
 }
 

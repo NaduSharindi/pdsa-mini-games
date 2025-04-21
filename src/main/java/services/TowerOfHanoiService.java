@@ -24,6 +24,9 @@ public class TowerOfHanoiService {
     private int currentPegCount = 3; // Default to 3 pegs
     private List<String> optimalMoves3Peg;
     private List<String> optimalMoves4Peg;
+    private TowerOfHanoiResult lastResult;
+    private boolean useRecursiveFor3Peg = true;
+    private boolean current3PegIsRecursive;
 
     public TowerOfHanoiService() {
         // Initialize final fields exactly once
@@ -53,11 +56,23 @@ public class TowerOfHanoiService {
         
         // Generate 3-peg solutions with both algorithms
         optimalMoves3Peg = new ArrayList<>();
-        recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        current3PegIsRecursive = useRecursiveFor3Peg;
+
+        if (current3PegIsRecursive) {
+            recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        } else {
+            iterativeSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        }
+        useRecursiveFor3Peg = !useRecursiveFor3Peg;
         
         // Generate 4-peg solution with Frame-Stewart algorithm
         optimalMoves4Peg = new ArrayList<>();
         frameStewartSolver.solve(currentDiskCount, 'A', 'D', 'B', 'C', optimalMoves4Peg);
+        
+    }
+    
+    public String getCurrent3PegAlgorithm() {
+        return current3PegIsRecursive ? "Recursive" : "Iterative";
     }
 
     /**
@@ -222,6 +237,7 @@ public class TowerOfHanoiService {
             );
             
             try {
+            	this.lastResult = result;
                 dbConnection.save(result);
             } catch (DatabaseException e) {
                 System.err.println("Failed to save result: " + e.getMessage());
@@ -236,6 +252,14 @@ public class TowerOfHanoiService {
      */
     public boolean checkAnswer(String playerName, int moveCount, String moveSequence) {
         return checkAnswer(playerName, moveCount, moveSequence, currentPegCount);
+    }
+    
+    /*
+     * Get time taken for each algorithm
+     */
+
+    public TowerOfHanoiResult getLastResult() {
+        return lastResult;
     }
 
     /**
