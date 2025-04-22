@@ -263,6 +263,11 @@ public class TowerOfHanoiService {
     public TowerOfHanoiResult getLastResult() {
         return lastResult;
     }
+    
+    public void setLastResult(TowerOfHanoiResult result) {
+        this.lastResult = result;
+    }
+
 
     /**
      * Get all saved results from the database

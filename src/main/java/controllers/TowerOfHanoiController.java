@@ -155,39 +155,42 @@ public class TowerOfHanoiController {
             int pegCount = view.getSelectedPegCount();
             List<String> solutionMoves = service.getOptimalMoves(pegCount);
             
-            // Format the moves as a comma-separated string
-            StringBuilder formattedMoves = new StringBuilder();
-            for (int i = 0; i < solutionMoves.size(); i++) {
-                formattedMoves.append(solutionMoves.get(i));
-                if (i < solutionMoves.size() - 1) {
-                    formattedMoves.append(", ");
-                }
+            // Generate timing data explicitly
+            long startTime = System.nanoTime();
+            if (pegCount == 3) {
+                service.getOptimalMoves(3); 
+            } else {
+                service.getOptimalMoves(4);
             }
-            
-            // Set the move sequence in the text area
-            view.setMoveSequence(formattedMoves.toString());
-            
-            // Set the optimal move count
-            view.setMoveCount(service.getOptimalMoveCount(pegCount));
-            
-            // Animate the solution
+            long duration = System.nanoTime() - startTime;
+
+            // Create and store result
+            TowerOfHanoiResult result = new TowerOfHanoiResult(
+                "System", 
+                service.getCurrentDiskCount(),
+                String.join(", ", solutionMoves),
+                solutionMoves.size(),
+                (pegCount == 3) ? duration : 0,
+                (pegCount == 3) ? duration : 0,
+                (pegCount == 4) ? duration : 0,
+                pegCount,
+                true,
+                true
+            );
+            service.setLastResult(result);
+
+            // Update UI
+            view.setMoveSequence(String.join(", ", solutionMoves));
+            view.setMoveCount(solutionMoves.size());
             view.animateSolution(solutionMoves);
             
-            TowerOfHanoiResult lastResult = service.getLastResult();
-            if (pegCount == 4) {
-                view.showAlgoSessionMsg("Frame-Stewart", lastResult.getFrameStewartTime());
-            } else {
-                view.showAlgoSessionMsg(service.getCurrent3PegAlgorithm(), lastResult.getRecursiveTime());
-            }
-            
-            // Show success message with algorithm info
-            String algorithmInfo = pegCount == 3 ? 
-                "using recursive/iterative algorithms" : 
-                "using Frame-Stewart algorithm";
-            view.showSuccess("Auto-solved with " + service.getOptimalMoveCount(pegCount) + 
-                             " moves " + algorithmInfo);
+            // Display timing
+            String algoName = (pegCount == 4) ? "Frame-Stewart" : service.getCurrent3PegAlgorithm();
+            long time = (pegCount == 4) ? result.getFrameStewartTime() : result.getRecursiveTime();
+            view.showAlgoSessionMsg(algoName, time);
         }
     }
+
     
     public List<TowerOfHanoiResult> getAllResults() {
         return service.getAllResults();
