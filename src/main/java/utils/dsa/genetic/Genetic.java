@@ -20,7 +20,14 @@ public class Genetic<N> {
 	private List<N> bestRoute;
 	private Double minDistance;
 
+	/**
+	 * Initialize the initial values
+	 * 
+	 * @param graph
+	 */
 	public Genetic(Graph<N> graph) {
+		if (graph == null)
+			throw new IllegalArgumentException("graph should not be null");
 		this.graph = graph;
 		this.populationSize = 100;
 		this.mutationRate = 0.05;
@@ -30,9 +37,22 @@ public class Genetic<N> {
 		minDistance = Double.MAX_VALUE;
 	}
 
+	/**
+	 * Calculate the shortest path and distance from genetic algorithm
+	 * 
+	 * @param selectedNodes
+	 * @param homeNode
+	 */
 	public void calculate(List<N> selectedNodes, N homeNode) {
+		if (selectedNodes == null)
+			throw new IllegalArgumentException("selected nodes should not be null");
+		if (homeNode == null)
+			throw new IllegalArgumentException("home node should not be null");
+		if (selectedNodes.size() < 1)
+			throw new IllegalArgumentException("selected nodes should have at least 1 nodes");
+
 		List<List<N>> population = initializePopulation(selectedNodes);
-		List<N> best = null;
+		List<N> best = new ArrayList<>();
 		double bestDistance = Double.MAX_VALUE;
 
 		for (int gen = 0; gen < generations; gen++) {
@@ -71,6 +91,11 @@ public class Genetic<N> {
 		this.minDistance = calculatePathDistance(completePath);
 	}
 
+	/**
+	 * mutate method in genetic algorithm
+	 * 
+	 * @param child
+	 */
 	private void mutate(List<N> child) {
 		if (rand.nextDouble() < mutationRate) {
 			int i = rand.nextInt(child.size());
@@ -79,6 +104,13 @@ public class Genetic<N> {
 		}
 	}
 
+	/**
+	 * Cross over method in genetic algorithm
+	 * 
+	 * @param parent1
+	 * @param parent2
+	 * @return
+	 */
 	private List<N> crossover(List<N> parent1, List<N> parent2) {
 		// Order crossover (OX1)
 		int size = parent1.size();
@@ -105,6 +137,12 @@ public class Genetic<N> {
 		return child;
 	}
 
+	/**
+	 * Select parent method in genetic algorithm
+	 * 
+	 * @param population
+	 * @return
+	 */
 	private List<N> selectParent(List<List<N>> population) {
 		List<List<N>> tournament = new ArrayList<List<N>>();
 		for (int i = 0; i < 5; i++) {
@@ -115,6 +153,12 @@ public class Genetic<N> {
 
 	}
 
+	/**
+	 * Initialize population
+	 * 
+	 * @param selectedNode
+	 * @return
+	 */
 	private List<List<N>> initializePopulation(List<N> selectedNode) {
 		List<List<N>> population = new ArrayList<List<N>>();
 		for (int i = 0; i < populationSize; i++) {
@@ -125,6 +169,12 @@ public class Genetic<N> {
 		return population;
 	}
 
+	/**
+	 * Calculate distance method in genetic algorithm
+	 * 
+	 * @param path
+	 * @return
+	 */
 	private Double calculateDistance(List<N> path) {
 		Double distance = 0.0;
 		for (int i = 0; i < path.size() - 1; i++) {
@@ -143,6 +193,12 @@ public class Genetic<N> {
 		return distance;
 	}
 
+	/**
+	 * Get the distance in best path calculated by the algorithm
+	 * 
+	 * @param bestPath
+	 * @return
+	 */
 	private Double calculatePathDistance(List<N> bestPath) {
 		Double distance = 0.0;
 		for (int i = 0; i < bestPath.size() - 1; i++) {
@@ -155,6 +211,11 @@ public class Genetic<N> {
 		return distance;
 	}
 
+	/**
+	 * getters and setters
+	 * 
+	 * @return
+	 */
 	public List<N> getBestRoute() {
 		return bestRoute;
 	}
