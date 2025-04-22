@@ -48,7 +48,7 @@ public class FrameStewartSolver implements HanoiSolver {
      * @param n Number of disks
      * @return Optimal k value
      */
-    private int calculateOptimalK(int n) {
+    protected int calculateOptimalK(int n) {
         // Special case for 4 disks
         if (n == 4) {
             return 2; // Optimal k for 4 disks with 4 pegs

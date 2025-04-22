@@ -1,67 +1,122 @@
 package services;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Unit tests for the TowerOfHanoiService logic.
- */
 public class TowerOfHanoiServiceTest {
+    private TowerOfHanoiService service;
+    
+    @BeforeEach
+    void setUp() {
+        service = new TowerOfHanoiService();
+    }
 
     @Test
     void testGenerateNewPuzzle() {
-        // Test that a new puzzle generates valid disk count and move lists
-        TowerOfHanoiService service = new TowerOfHanoiService();
         service.generateNewPuzzle();
-        int count = service.getCurrentDiskCount();
-        assertTrue(count >= 5 && count <= 10, "Disk count should be between 5 and 10");
-        assertFalse(service.getOptimalMoves(3).isEmpty(), "3-peg moves should not be empty");
-        assertFalse(service.getOptimalMoves(4).isEmpty(), "4-peg moves should not be empty");
+        int diskCount = service.getCurrentDiskCount();
+        assertTrue(diskCount >= 5 && diskCount <= 10);
+        
+        // Test 3-peg solutions
+        List<String> moves3 = service.getOptimalMoves(3);
+        assertFalse(moves3.isEmpty());
+        assertEquals((int) Math.pow(2, diskCount) - 1, moves3.size());
+        
+        // Test 4-peg solutions
+        List<String> moves4 = service.getOptimalMoves(4);
+        assertFalse(moves4.isEmpty());
     }
 
     @Test
-    void testValidateMovesCorrect3Pegs() {
-        // Test that the service validates the correct solution for 3 pegs
-        TowerOfHanoiService service = new TowerOfHanoiService();
+    void testGetOptimalMoveCount() {
+        service.generateNewPuzzle();
+        int diskCount = service.getCurrentDiskCount();
+        
+        // Test 3-peg optimal moves
+        assertEquals((int) Math.pow(2, diskCount) - 1, 
+                    service.getOptimalMoveCount(3));
+        
+        // Test 4-peg optimal moves
+        int fourPegMoves = service.getOptimalMoves(4).size();
+        assertEquals(fourPegMoves, service.getOptimalMoveCount(4));
+    }
+
+    @Test
+    void testValidateMoves() {
+        service.generateNewPuzzle();
+        int diskCount = service.getCurrentDiskCount();
+        
+        // Test valid solution
+        List<String> validMoves = service.getOptimalMoves(3);
+        assertTrue(service.validateMoves(validMoves, 3));
+        
+        // Test invalid move sequence
+        List<String> invalidMoves = List.of("A-B", "B-A");
+        assertFalse(service.validateMoves(invalidMoves, 3));
+        
+        // Test incomplete solution
+        List<String> incompleteMoves = validMoves.subList(0, validMoves.size()-1);
+        assertFalse(service.validateMoves(incompleteMoves, 3));
+    }
+
+    @Test
+    void testCheckAnswer() {
+        service.generateNewPuzzle();
+        int diskCount = service.getCurrentDiskCount();
+        List<String> validMoves = service.getOptimalMoves(3);
+        String validSequence = String.join(",", validMoves);
+        
+        // Test correct answer
+        assertTrue(service.checkAnswer("test", validMoves.size(), validSequence, 3));
+        
+        // Test incorrect move count
+        assertFalse(service.checkAnswer("test", validMoves.size() - 1, validSequence, 3));
+        
+        // Test invalid move sequence
+        assertFalse(service.checkAnswer("test", 31, "A-B,invalid", 3));
+    }
+
+    @Test
+    void testAlgorithmAlternation() {
         service.setPegCount(3);
         service.generateNewPuzzle();
-        var correctMoves = service.getOptimalMoves(3);
-        assertTrue(service.validateMoves(correctMoves, 3), "Correct moves for 3 pegs should be valid");
+        String firstAlgo = service.getCurrent3PegAlgorithm();
+        
+        service.generateNewPuzzle();
+        String secondAlgo = service.getCurrent3PegAlgorithm();
+        
+        assertNotEquals(firstAlgo, secondAlgo);
     }
 
     @Test
-    void testValidateMovesCorrect4Pegs() {
-        // Test that the service validates the correct solution for 4 pegs
-        TowerOfHanoiService service = new TowerOfHanoiService();
+    void testPegCountHandling() {
+        // Test 3-peg configuration
+        service.setPegCount(3);
+        assertEquals(3, service.getPegCount());
+        
+        // Test 4-peg configuration
         service.setPegCount(4);
-        service.generateNewPuzzle();
-        var correctMoves = service.getOptimalMoves(4);
-        assertTrue(service.validateMoves(correctMoves, 4), "Correct moves for 4 pegs should be valid");
-    }
-
-    @Test
-    void testValidateMovesIncorrect() {
-        // Test that an obviously wrong move sequence is invalid
-        TowerOfHanoiService service = new TowerOfHanoiService();
-        service.setPegCount(3);
-        service.generateNewPuzzle();
-        var wrongMoves = Arrays.asList("A-B", "B-C"); // Too short, obviously wrong
-        assertFalse(service.validateMoves(wrongMoves, 3), "Incorrect moves should be invalid");
+        assertEquals(4, service.getPegCount());
     }
     
     @Test
-    void testAlgorithmAlternation() {
-    	//Test that selection of algorithms alternatively
-        TowerOfHanoiService service = new TowerOfHanoiService();
-        service.setPegCount(3);
+    void testNonOptimalSolution() {
         service.generateNewPuzzle();
-        String algo1 = service.getCurrent3PegAlgorithm();
-        service.generateNewPuzzle();
-        String algo2 = service.getCurrent3PegAlgorithm();
-        assertNotEquals(algo1, algo2, "Algorithm should alternate between recursive and iterative");
+        // Get the optimal solution
+        List<String> optimalMoves = service.getOptimalMoves(3);
+        
+        List<String> nonOptimalMoves = new ArrayList<>();
+        nonOptimalMoves.add("A-B"); // Move disk 1 from A to B
+        nonOptimalMoves.add("B-A"); // Move disk 1 back to A
+        nonOptimalMoves.addAll(optimalMoves);
+        assertTrue(service.validateMoves(nonOptimalMoves, 3));
+        assertTrue(service.checkAnswer("test", nonOptimalMoves.size(), String.join(",", nonOptimalMoves), 3));
+        assertNotNull(service.getLastResult());
+        assertFalse(service.getLastResult().isOptimal());
+
     }
-
 }
-

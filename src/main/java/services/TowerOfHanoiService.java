@@ -132,25 +132,24 @@ public class TowerOfHanoiService {
      * Validate user moves against correct solution for a specific peg count
      */
     public boolean validateMoves(List<String> userMoves, int pegCount) {
-        int expectedMoveCount = getOptimalMoveCount(pegCount);
-        
-        if (userMoves.size() != expectedMoveCount) {
-            return false;
-        }
+ 
 
         // Simulation of Tower of Hanoi with user moves
         char[][] pegs = new char[pegCount][currentDiskCount];
         int[] topIndex = new int[pegCount]; // Top disk index for each peg
         
-        // Initialize all pegs as empty except first peg
-        for (int i = 0; i < pegCount; i++) {
-            topIndex[i] = (i == 0) ? currentDiskCount - 1 : -1;
+     // Initialize all pegs as empty except first peg
+        topIndex[0] = currentDiskCount - 1;
+        for (int i = 1; i < pegCount; i++) {
+            topIndex[i] = -1;
         }
+       
 
         // Initialize first peg with all disks
         for (int i = 0; i < currentDiskCount; i++) {
             pegs[0][i] = (char)('A' + (currentDiskCount - 1 - i));
         }
+        
 
         // Process each move
         for (String move : userMoves) {
@@ -167,22 +166,22 @@ public class TowerOfHanoiService {
                 return false; // Invalid move
             }
 
-            char diskToMove = pegs[fromPeg][topIndex[fromPeg]];
-
-            // Check if destination has smaller disk
-            if (topIndex[toPeg] >= 0 && pegs[toPeg][topIndex[toPeg]] < diskToMove) {
-                return false; // Larger disk on smaller one
+            char disk = pegs[fromPeg][topIndex[fromPeg]];
+            // Check disk size rule
+            if (topIndex[toPeg] != -1 && pegs[toPeg][topIndex[toPeg]] < disk) {
+                return false;
             }
 
             // Move the disk
             pegs[fromPeg][topIndex[fromPeg]] = 0;
             topIndex[fromPeg]--;
             topIndex[toPeg]++;
-            pegs[toPeg][topIndex[toPeg]] = diskToMove;
+            pegs[toPeg][topIndex[toPeg]] = disk;
         }
 
-        // Check if all disks moved to destination peg C using 3 pegs and peg D using 4 pegs
-        return topIndex[pegCount == 4 ? 3 : 2] == currentDiskCount - 1;
+        // Check final state (all disks on destination peg)
+        int destinationPeg = (pegCount == 4) ? 3 : 2; // D for 4 pegs, C for 3
+        return topIndex[destinationPeg] == currentDiskCount - 1;
     }
 
     /**
@@ -200,11 +199,14 @@ public class TowerOfHanoiService {
         String[] moves = moveSequence.split(",");
         List<String> userMoves = new ArrayList<>();
         for (String move : moves) {
-            userMoves.add(move.trim());
+            userMoves.add(move.replaceAll("\\s+", "").trim());
         }
 
         int expectedMoveCount = getOptimalMoveCount(pegCount);
         boolean isCorrect = validateMoves(userMoves, pegCount) && moveCount == expectedMoveCount;
+        boolean isValid = validateMoves(userMoves, pegCount);
+        boolean correctMoveCount = moveCount == userMoves.size();
+        boolean isOptimal = isValid && (moveCount == getOptimalMoveCount(pegCount));
 
         // Time algorithms
         long recursiveTime = 0, iterativeTime = 0, frameStewartTime = 0;
@@ -230,10 +232,10 @@ public class TowerOfHanoiService {
         frameStewartTime = System.nanoTime() - startTime;
 
         // Save to database if correct
-        if (isCorrect && dbConnection != null) {
+        if (isValid && dbConnection != null) {
             TowerOfHanoiResult result = new TowerOfHanoiResult(
                 playerName, currentDiskCount, moveSequence, moveCount,
-                recursiveTime, iterativeTime, frameStewartTime, pegCount, true
+                recursiveTime, iterativeTime, frameStewartTime, pegCount, true, isOptimal
             );
             
             try {
@@ -244,7 +246,7 @@ public class TowerOfHanoiService {
             }
         }
 
-        return isCorrect;
+        return isValid && moveCount == userMoves.size();
     }
 
     /**

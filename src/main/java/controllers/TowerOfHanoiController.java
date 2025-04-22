@@ -124,16 +124,24 @@ public class TowerOfHanoiController {
             boolean isCorrect = service.checkAnswer(playerName, moveCount, moveSequence, pegCount);
             
             if (isCorrect) {
-                view.showSuccess("Congratulations! Your answer is correct.");
-                view.animateSolution(service.getOptimalMoves(pegCount));
-                
-             // Show which algorithm and time
                 TowerOfHanoiResult lastResult = service.getLastResult();
-                if (pegCount == 4) {
-                    view.showAlgoSessionMsg("Frame-Stewart", lastResult.getFrameStewartTime());
+                String algoName = (pegCount == 4) ? "Frame-Stewart" : 
+                                service.getCurrent3PegAlgorithm();
+                long time = (pegCount == 4) ? lastResult.getFrameStewartTime() :
+                                          lastResult.getRecursiveTime();
+                
+                if (lastResult.isOptimal()) {
+                    view.showSuccess(String.format(
+                        "Optimal answer! %s algorithm took %.3f ms",
+                        algoName, time/1_000_000.0
+                    ));
                 } else {
-                    view.showAlgoSessionMsg(service.getCurrent3PegAlgorithm(), lastResult.getRecursiveTime());
+                    view.showSuccess(String.format(
+                        "Correct but non-optimal answer! %s algorithm took %.3f ms (Optimal: %d moves)",
+                        algoName, time/1_000_000.0, service.getOptimalMoveCount(pegCount)
+                    ));
                 }
+                view.animateSolution(service.getOptimalMoves(pegCount));
             } else {
                 view.showError("Sorry, your answer is incorrect. Try again.");
             }
