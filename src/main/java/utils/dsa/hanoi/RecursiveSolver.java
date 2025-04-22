@@ -9,6 +9,7 @@ public class RecursiveSolver implements HanoiSolver {
             moves.add(source + "-" + destination);
             return;
         }
+   
         
         solve(disks - 1, source, auxiliary, destination, moves);
         moves.add(source + "-" + destination);

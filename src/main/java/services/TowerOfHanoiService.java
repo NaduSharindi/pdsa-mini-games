@@ -24,6 +24,9 @@ public class TowerOfHanoiService {
     private int currentPegCount = 3; // Default to 3 pegs
     private List<String> optimalMoves3Peg;
     private List<String> optimalMoves4Peg;
+    private TowerOfHanoiResult lastResult;
+    private boolean useRecursiveFor3Peg = true;
+    private boolean current3PegIsRecursive;
 
     public TowerOfHanoiService() {
         // Initialize final fields exactly once
@@ -53,11 +56,23 @@ public class TowerOfHanoiService {
         
         // Generate 3-peg solutions with both algorithms
         optimalMoves3Peg = new ArrayList<>();
-        recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        current3PegIsRecursive = useRecursiveFor3Peg;
+
+        if (current3PegIsRecursive) {
+            recursiveSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        } else {
+            iterativeSolver.solve(currentDiskCount, 'A', 'C', 'B', optimalMoves3Peg);
+        }
+        useRecursiveFor3Peg = !useRecursiveFor3Peg;
         
         // Generate 4-peg solution with Frame-Stewart algorithm
         optimalMoves4Peg = new ArrayList<>();
         frameStewartSolver.solve(currentDiskCount, 'A', 'D', 'B', 'C', optimalMoves4Peg);
+        
+    }
+    
+    public String getCurrent3PegAlgorithm() {
+        return current3PegIsRecursive ? "Recursive" : "Iterative";
     }
 
     /**
@@ -117,25 +132,24 @@ public class TowerOfHanoiService {
      * Validate user moves against correct solution for a specific peg count
      */
     public boolean validateMoves(List<String> userMoves, int pegCount) {
-        int expectedMoveCount = getOptimalMoveCount(pegCount);
-        
-        if (userMoves.size() != expectedMoveCount) {
-            return false;
-        }
+ 
 
         // Simulation of Tower of Hanoi with user moves
         char[][] pegs = new char[pegCount][currentDiskCount];
         int[] topIndex = new int[pegCount]; // Top disk index for each peg
         
-        // Initialize all pegs as empty except first peg
-        for (int i = 0; i < pegCount; i++) {
-            topIndex[i] = (i == 0) ? currentDiskCount - 1 : -1;
+     // Initialize all pegs as empty except first peg
+        topIndex[0] = currentDiskCount - 1;
+        for (int i = 1; i < pegCount; i++) {
+            topIndex[i] = -1;
         }
+       
 
         // Initialize first peg with all disks
         for (int i = 0; i < currentDiskCount; i++) {
             pegs[0][i] = (char)('A' + (currentDiskCount - 1 - i));
         }
+        
 
         // Process each move
         for (String move : userMoves) {
@@ -152,22 +166,22 @@ public class TowerOfHanoiService {
                 return false; // Invalid move
             }
 
-            char diskToMove = pegs[fromPeg][topIndex[fromPeg]];
-
-            // Check if destination has smaller disk
-            if (topIndex[toPeg] >= 0 && pegs[toPeg][topIndex[toPeg]] < diskToMove) {
-                return false; // Larger disk on smaller one
+            char disk = pegs[fromPeg][topIndex[fromPeg]];
+            // Check disk size rule
+            if (topIndex[toPeg] != -1 && pegs[toPeg][topIndex[toPeg]] < disk) {
+                return false;
             }
 
             // Move the disk
             pegs[fromPeg][topIndex[fromPeg]] = 0;
             topIndex[fromPeg]--;
             topIndex[toPeg]++;
-            pegs[toPeg][topIndex[toPeg]] = diskToMove;
+            pegs[toPeg][topIndex[toPeg]] = disk;
         }
 
-        // Check if all disks moved to destination peg C using 3 pegs and peg D using 4 pegs
-        return topIndex[pegCount == 4 ? 3 : 2] == currentDiskCount - 1;
+        // Check final state (all disks on destination peg)
+        int destinationPeg = (pegCount == 4) ? 3 : 2; // D for 4 pegs, C for 3
+        return topIndex[destinationPeg] == currentDiskCount - 1;
     }
 
     /**
@@ -185,11 +199,14 @@ public class TowerOfHanoiService {
         String[] moves = moveSequence.split(",");
         List<String> userMoves = new ArrayList<>();
         for (String move : moves) {
-            userMoves.add(move.trim());
+            userMoves.add(move.replaceAll("\\s+", "").trim());
         }
 
         int expectedMoveCount = getOptimalMoveCount(pegCount);
         boolean isCorrect = validateMoves(userMoves, pegCount) && moveCount == expectedMoveCount;
+        boolean isValid = validateMoves(userMoves, pegCount);
+        boolean correctMoveCount = moveCount == userMoves.size();
+        boolean isOptimal = isValid && (moveCount == getOptimalMoveCount(pegCount));
 
         // Time algorithms
         long recursiveTime = 0, iterativeTime = 0, frameStewartTime = 0;
@@ -215,20 +232,21 @@ public class TowerOfHanoiService {
         frameStewartTime = System.nanoTime() - startTime;
 
         // Save to database if correct
-        if (isCorrect && dbConnection != null) {
+        if (isValid && dbConnection != null) {
             TowerOfHanoiResult result = new TowerOfHanoiResult(
                 playerName, currentDiskCount, moveSequence, moveCount,
-                recursiveTime, iterativeTime, frameStewartTime, pegCount, true
+                recursiveTime, iterativeTime, frameStewartTime, pegCount, true, isOptimal
             );
             
             try {
+            	this.lastResult = result;
                 dbConnection.save(result);
             } catch (DatabaseException e) {
                 System.err.println("Failed to save result: " + e.getMessage());
             }
         }
 
-        return isCorrect;
+        return isValid && moveCount == userMoves.size();
     }
 
     /**
@@ -237,6 +255,19 @@ public class TowerOfHanoiService {
     public boolean checkAnswer(String playerName, int moveCount, String moveSequence) {
         return checkAnswer(playerName, moveCount, moveSequence, currentPegCount);
     }
+    
+    /*
+     * Get time taken for each algorithm
+     */
+
+    public TowerOfHanoiResult getLastResult() {
+        return lastResult;
+    }
+    
+    public void setLastResult(TowerOfHanoiResult result) {
+        this.lastResult = result;
+    }
+
 
     /**
      * Get all saved results from the database
