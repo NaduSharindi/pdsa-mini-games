@@ -21,6 +21,11 @@ import views.TowerOfHanoiView;
 import controllers.TowerOfHanoiController; 
 import services.TowerOfHanoiService;
 
+import services.EightQueensService;
+import views.EightQueensView;
+import controllers.EightQueensController;
+
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
@@ -37,6 +42,11 @@ public class Home extends JFrame {
     TowerOfHanoiView hanoiView;
     TowerOfHanoiController hanoiController;
     TowerOfHanoiService hanoiService;
+    
+    //dependencies of Eight Queens Puzzle Game
+     EightQueensService eightQueensService;
+     EightQueensView eightQueensView;
+     EightQueensController eightQueensController;
 
 	
 	/**
@@ -127,7 +137,8 @@ public class Home extends JFrame {
 						break;
 					case "queensIcon":
 						//TODO eight queens game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						eightQueensController.showView();
 						break;
 					case "knightsIcon":
 						//TODO knights tour game controller method
@@ -161,6 +172,11 @@ public class Home extends JFrame {
 	    this.hanoiView = new TowerOfHanoiView();
 	    this.hanoiService = new TowerOfHanoiService();
 	    this.hanoiController = new TowerOfHanoiController(hanoiService, hanoiView);
+	    
+	    // Eight Queens Puzzle dependencies
+        this.eightQueensService = new EightQueensService();
+        this.eightQueensView = new EightQueensView();
+        this.eightQueensController = new EightQueensController(eightQueensView, eightQueensService);
 	
 	}
 

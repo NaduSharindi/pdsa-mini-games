@@ -29,10 +29,14 @@ public class EightQueensService {
 	private HashSet<String> solutionSet;
 	private Datastore datastore;
 	
-	public EightQueensService() throws DatabaseException{
-		solutions = new ArrayList<>();
-		solutionSet = new HashSet<>();
-		datastore = DatabaseConnection.getInstance().getDatastore();
+	public EightQueensService(){
+        try {
+            solutions = new ArrayList<>();
+            solutionSet = new HashSet<>();
+            datastore = DatabaseConnection.getInstance().getDatastore();
+        } catch (DatabaseException e) {
+            throw new RuntimeException("Database error in EightQueensService: " + e.getMessage(), e);
+        }
 	}
 	
 	/*
@@ -40,7 +44,7 @@ public class EightQueensService {
 	 * and save it in database with time
 	 */
 	
-	public long findAllSolutionsSequential() throws DatabaseException{
+	public long findAllSolutionsSequential() {
 		solutions = new ArrayList<>();
 		solutionSet = new HashSet<>();
 		long start = System.currentTimeMillis();
@@ -86,7 +90,7 @@ public class EightQueensService {
 	 * and save it in database with time 
 	 */
 	
-	public long findAllSolutionsThreaded() throws DatabaseException{
+	public long findAllSolutionsThreaded() {
         solutions = new ArrayList<>();
         solutionSet = new HashSet<>();
         long start = System.currentTimeMillis();
@@ -128,7 +132,7 @@ public class EightQueensService {
 	 * save found solutions in database
 	 */
 	
-	private void saveSolutions(String algorithmType, long timeTaken) throws DatabaseException{
+	private void saveSolutions(String algorithmType, long timeTaken) {
 		for(int i = 0; i < solutions.size(); i++) {
 			int[] solution = solutions.get(i);
 			EightQueensResult result = new EightQueensResult(
@@ -158,7 +162,7 @@ public class EightQueensService {
 	 * Save player's correct solution in database
 	 */
 	
-	public void savePlayerSolution(int[] positions, String playerName, long timeTaken) throws DatabaseException {
+	public void savePlayerSolution(int[] positions, String playerName, long timeTaken) {
 		String key = serialize(positions);
 		if(!solutionSet.contains(key))
 			return;  // not valid solution
@@ -191,7 +195,7 @@ public class EightQueensService {
 	 * reset all solutions recognition for new round
 	 */
 	
-	public void restAllRecognizedSolutins() throws DatabaseException {
+	public void restAllRecognizedSolutins() {
 		for(int i = 0; i < solutions.size(); i++) {
 			int[] solution = solutions.get(i);
 			EightQueensResult result = datastore.find(EightQueensResult.class)
