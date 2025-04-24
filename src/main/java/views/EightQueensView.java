@@ -23,6 +23,7 @@ public class EightQueensView extends JPanel {
     private JLabel feedbackLabel;
     private JTextField playerNameField;
     private JLabel solutionsFoundLabel;
+    private JLabel remainingSolutionsLabel;
 
 	public EightQueensView() {
 		setLayout(new BorderLayout());
@@ -46,6 +47,7 @@ public class EightQueensView extends JPanel {
         submitButton = new JButton("Submit Solution");
         resetButton = new JButton("Reset Board");
         solutionsFoundLabel = new JLabel("Solutions found: 0");
+        remainingSolutionsLabel = new JLabel("Remaining: 92");
         
         
         controlPanel.add(new JLabel("Player Name:"));
@@ -53,6 +55,7 @@ public class EightQueensView extends JPanel {
         controlPanel.add(submitButton);
         controlPanel.add(resetButton);
         controlPanel.add(solutionsFoundLabel);
+        controlPanel.add(remainingSolutionsLabel);
         
         //Feedback Label
         feedbackLabel = new JLabel("Welcome to the Eight Queens Puzzle!");
@@ -138,6 +141,10 @@ public class EightQueensView extends JPanel {
 	
 	public void setSolutionsFound(int count) {
 		solutionsFoundLabel.setText("Solutions Found: " + count);
+	}
+	
+	public void setRemainingSolutions(int remaining) {
+	    remainingSolutionsLabel.setText("Remaining: " + remaining);
 	}
 	
 	/*

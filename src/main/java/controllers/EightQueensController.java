@@ -4,6 +4,8 @@ import services.EightQueensService;
 import views.EightQueensView;
 import models.exceptions.DatabaseException;
 import javax.swing.*;
+
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -21,6 +23,26 @@ public class EightQueensController {
         service.findAllSolutionsSequential();
         initListeners();
         updateSolutionsFound();
+    }
+    
+    public void showView() {
+        if (frame == null) {
+            frame = new JFrame("Eight Queens Puzzle");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.add(view); 
+            frame.setPreferredSize(new Dimension(800, 600));
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+        }
+        frame.setVisible(true); 
+    }
+
+    public void hideView() {
+        if (frame != null) {
+            frame.setVisible(false);
+            frame.dispose(); 
+            frame = null;  
+        }
     }
     
     private void initListeners() {
@@ -99,27 +121,12 @@ public class EightQueensController {
     }
     
     private void updateSolutionsFound() {
-    	int count = service.getSolutionCount();
-    	view.setSolutionsFound(count);
+        int found = service.getSolutionCount();
+        int total = 92; 
+        int remaining = total - found;
+        view.setSolutionsFound(found);
+        view.setRemainingSolutions(remaining);
     }
     
-    public void showView() {
-        if (frame == null) {
-            frame = new JFrame("Eight Queens Puzzle");
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            frame.add(view); // Add the view to the frame
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-        }
-        frame.setVisible(true); // Show the frame
-    }
-
-    public void hideView() {
-        if (frame != null) {
-            frame.setVisible(false);
-            frame.dispose(); // Optional: Clean up resources
-            frame = null; // Reset for next use
-        }
-    }
 
 }

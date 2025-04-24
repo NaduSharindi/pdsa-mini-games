@@ -51,7 +51,15 @@ public class EightQueensService {
 		int[] board = new int[SIZE];
 		solve(0, board);
 		long end = System.currentTimeMillis();
-		saveSolutions("Sequential", end - start);
+	    if (!solutionsExistInDatabase()) {
+	        saveSolutions("Sequential", end - start); // Only insert if not already present
+	    } else {
+	        // Load solutions from database into memory for quick validation
+	        for (EightQueensResult result : datastore.find(EightQueensResult.class)) {
+	            solutions.add(result.getPositions());
+	            solutionSet.add(serialize(result.getPositions()));
+	        }
+	    }
 		return end - start;
     }
 	
@@ -111,7 +119,16 @@ public class EightQueensService {
         	Thread.currentThread().interrupt();
         }
         long end = System.currentTimeMillis();
-        saveSolutions("Threaded", end - start);
+        // Only save if not already in database
+        if (!solutionsExistInDatabase()) {
+            saveSolutions("Threaded", end - start);
+        } else {
+            // Load solutions from database into memory for validation
+            for (EightQueensResult result : datastore.find(EightQueensResult.class)) {
+                solutions.add(result.getPositions());
+                solutionSet.add(serialize(result.getPositions()));
+            }
+        }
         return end - start;
 	}
 	
@@ -156,6 +173,14 @@ public class EightQueensService {
 	public boolean validatePlayerSolution(int[] positions) {
 		String key = serialize(positions);
 		return solutionSet.contains(key);
+	}
+	
+	/*
+	 * check only 92 solutions in database once
+	 */
+	
+	private boolean solutionsExistInDatabase() {
+		return datastore.find(EightQueensResult.class).count() >= 92;
 	}
 	
 	/**
