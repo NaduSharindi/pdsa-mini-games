@@ -2,7 +2,6 @@ package controllers;
 
 import services.EightQueensService;
 import views.EightQueensView;
-import models.exceptions.DatabaseException;
 import javax.swing.*;
 
 import java.awt.Dimension;
@@ -21,6 +20,7 @@ public class EightQueensController {
         this.view = view;
         this.service = service;
         service.findAllSolutionsSequential();
+        service.findAllSolutionsThreaded();
         initListeners();
         updateSolutionsFound();
     }
@@ -85,40 +85,76 @@ public class EightQueensController {
     			view.setFeedback("Board reset. Try again!");
     		}
     	});
+    	
+    	view.setBackToMenuButtonListener(new ActionListener() {
+    	    @Override
+    	    public void actionPerformed(ActionEvent e) {
+    	        
+    	        hideView(); 
+    	        
+    	    }
+    	});
+
     }
     
     private void processSubmit() {
-    	String playerName = view.getPlayerName();
-    	if(playerName.isEmpty()) {
-    		view.setFeedback("Please enter your name");
-    		return;
-    	}
-    	
-    	int[] positions = view.getBoardState();
-    	for(int pos : positions) {
-    		if(pos == -1) {
-    			view.setFeedback("Please 1 queen each column");
-    			return;
-    		}
-    	}
-    	
-    	try {
-    		if(!service.validatePlayerSolution(positions)) {
-    			view.setFeedback("Incorrect solution. Try again!");
-    		} else if(service.isSolutionRecognized(positions)) {
-    			view.setFeedback("This solution has already been recognized. Try new solution!");
-    		} else {
-    			long timeTaken = 0;
-    			
-    			service.savePlayerSolution(positions, playerName, timeTaken);
-    			view.setFeedback("Congratulations! Your solution is correct and it is recorded.");
-    			updateSolutionsFound();
-    			view.resetBoard();
-    		}
-    	} catch(RuntimeException ex) {
-    		view.setFeedback("Database error: " + ex.getMessage());
-    	}
+        String playerName = view.getPlayerName().trim();
+
+        // Validate name field (empty)
+        if (playerName.isEmpty()) {
+            view.setFeedback("Please enter your name.", true);
+            return;
+        }
+
+        // Validate name format (3-20 alphanumeric with optional ._- in middle)
+        String nameRegex = "^[a-zA-Z0-9]([._-]?[a-zA-Z0-9]){2,19}$";
+        if (!playerName.matches(nameRegex)) {
+            view.setFeedback("Invalid name. Use 3-20 letters/numbers, may include . _ - (no special chars at start/end)", true);
+            return;
+        }
+
+        // Validate all 8 queens placed
+        int[] positions = view.getBoardState();
+        for (int pos : positions) {
+            if (pos == -1) {
+                view.setFeedback("Place one queen in each column!", true);
+                return;
+            }
+        }
+
+        try {
+            // Check solution validity
+            if (!service.validatePlayerSolution(positions)) {
+                view.setFeedback("Incorrect solution. Try again!", true);
+            } 
+            //Check for duplicate recognition
+            else if (service.isSolutionRecognized(positions)) {
+                view.setFeedback("Solution already claimed! Try another configuration.", true);
+            } 
+            // Save valid new solution
+            else {
+                service.savePlayerSolution(positions, playerName);
+                view.setFeedback("Congratulations " + playerName + "! Solution recorded.", false);
+                
+                //  Update counters
+                updateSolutionsFound();
+                
+                // Check if all solutions found
+                if (service.getSolutionCount() == 92) {
+                    service.resetAllRecognizedSolutions();
+                    view.setFeedback("All 92 solutions found! Resetting for new players.");
+                }
+                
+                // Reset UI
+                view.resetBoard();
+                view.clearPlayerNameField();
+            }
+        } catch (RuntimeException ex) {
+            view.setFeedback("Database Error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
+
     
     private void updateSolutionsFound() {
         int found = service.getSolutionCount();
