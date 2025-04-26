@@ -46,7 +46,7 @@ public class EightQueensService {
 	 */
 	
 	public long findAllSolutionsSequential() {
-	    if (solutionsExistInDatabase()) {
+	    if (sequentialSolutionsExist()) {
 	        // Load solutions AND time from database
 	        solutions = new ArrayList<>();
 	        solutionSet = new HashSet<>();
@@ -112,13 +112,16 @@ public class EightQueensService {
 	
 	public long findAllSolutionsThreaded() {
 	    long timeTaken = 0;
-	    if (solutionsExistInDatabase()) {
+	    if (threadedSolutionsExist()) {
 	        // Just load solutions AND time from database
 	        solutions = new ArrayList<>();
 	        solutionSet = new HashSet<>();
 	        for (EightQueensResult result : datastore.find(EightQueensResult.class)) {
-	            solutions.add(result.getPositions());
-	            solutionSet.add(serialize(result.getPositions()));
+	        	int[] positions = result.getPositions();
+	        	if (positions != null) {
+	               solutions.add(positions);
+	               solutionSet.add(serialize(positions));
+	        	}
 	            // Get time from the first threaded result
 	            if ("Threaded".equals(result.getAlgorithmType()) && timeTaken == 0) {
 	                timeTaken = result.getTimeTaken();
@@ -161,6 +164,9 @@ public class EightQueensService {
 	 */
 	
 	private String serialize(int[] board) {
+	    if (board == null) {
+	        return "";  
+	    }
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < board.length; i++) {
 			sb.append(board[i]);
@@ -203,9 +209,18 @@ public class EightQueensService {
 	 * check only 92 solutions in database once
 	 */
 	
-	private boolean solutionsExistInDatabase() {
-		return datastore.find(EightQueensResult.class).count() >= 92;
+	private boolean sequentialSolutionsExist() {
+	    return datastore.find(EightQueensResult.class)
+	        .filter("algorithmType", "Sequential")
+	        .count() >= 92;
 	}
+
+	private boolean threadedSolutionsExist() {
+	    return datastore.find(EightQueensResult.class)
+	        .filter("algorithmType", "Threaded")
+	        .count() >= 92;
+	}
+
 	
 	/**
 	 * Save player's correct solution in database

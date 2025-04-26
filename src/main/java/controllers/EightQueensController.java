@@ -162,6 +162,11 @@ public class EightQueensController {
         int remaining = total - found;
         view.setSolutionsFound(found);
         view.setRemainingSolutions(remaining);
+        
+        long seqTime = service.findAllSolutionsSequential();
+        long thrTime = service.findAllSolutionsThreaded();
+        view.setSequentialTimeLabel(seqTime);
+        view.setThreadedTimeLabel(thrTime);
     }
     
 

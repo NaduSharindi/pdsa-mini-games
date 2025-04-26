@@ -31,7 +31,6 @@ public class EightQueensView extends JPanel {
 
 	public EightQueensView() {
 		setLayout(new BorderLayout());
-        // 1. Welcome message at the very top
         welcomeLabel = new JLabel("Welcome to the Eight Queens Puzzle!", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Serif", Font.BOLD, 28));
         add(welcomeLabel, BorderLayout.NORTH);
@@ -51,7 +50,7 @@ public class EightQueensView extends JPanel {
         }
         add(boardPanel, BorderLayout.CENTER);
         
-        // stats panel
+        // Game information panel
         Font bigFont = new Font("Arial", Font.BOLD, 16);
         Color blue = new Color(0, 0, 180);
         
@@ -76,7 +75,7 @@ public class EightQueensView extends JPanel {
         nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
         playerNameField = new JTextField(12);
-        playerNameField.setMaximumSize(new Dimension(200, 40));
+        playerNameField.setMaximumSize(new Dimension(360, 30));
         playerNameField.setFont(new Font("Arial", Font.PLAIN, 18));
         
         Dimension buttonSize = new Dimension(180, 40);
@@ -109,6 +108,7 @@ public class EightQueensView extends JPanel {
         playerPanel.add(resetButton);
         playerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         playerPanel.add(backToMenuButton);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
         JPanel eastPanel = new JPanel();
         eastPanel.setBorder(BorderFactory.createEmptyBorder(0, 32, 0, 0));
@@ -132,7 +132,8 @@ public class EightQueensView extends JPanel {
        
         feedbackLabel = new JLabel(" ");
         feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(feedbackLabel, BorderLayout.SOUTH);  
+        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        playerPanel.add(feedbackLabel);  
 	}
 	
 	/*
@@ -159,10 +160,6 @@ public class EightQueensView extends JPanel {
 	    backToMenuButton.addActionListener(listener);
 	}
 
-	
-	public JButton getBackToMenuButton() {
-	    return backToMenuButton;
-	}
 	
 	/*
 	 * Get current board state as 
@@ -207,6 +204,11 @@ public class EightQueensView extends JPanel {
     public JButton[][] getBoardButtons() {
         return boardButtons;
     }
+    
+	public JButton getBackToMenuButton() {
+	    return backToMenuButton;
+	}
+	
 	
 	public String getPlayerName() {
 		return playerNameField.getText().trim();
@@ -223,6 +225,14 @@ public class EightQueensView extends JPanel {
 	public void setRemainingSolutions(int remaining) {
 	    remainingSolutionsLabel.setText("Remaining: " + remaining);
 	}
+	
+	public void setSequentialTimeLabel(long timeMs) {
+	    sequentialTimeLabel.setText("Sequential Time: " + timeMs + " ms");
+	}
+	public void setThreadedTimeLabel(long timeMs) {
+	    threadedTimeLabel.setText("Threaded Time: " + timeMs + " ms");
+	}
+
 	
 	public void setFeedback(String message, boolean isError) {
 	    feedbackLabel.setText(message);
