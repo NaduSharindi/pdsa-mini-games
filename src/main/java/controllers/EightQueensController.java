@@ -139,12 +139,7 @@ public class EightQueensController {
                 //  Update counters
                 updateSolutionsFound();
                 
-                // Check if all solutions found
-                if (service.getSolutionCount() == 92) {
-                    service.resetAllRecognizedSolutions();
-                    view.setFeedback("All 92 solutions found! Resetting for new players.");
-                }
-                
+
                 // Reset UI
                 view.resetBoard();
                 view.clearPlayerNameField();
@@ -167,6 +162,10 @@ public class EightQueensController {
         long thrTime = service.findAllSolutionsThreaded();
         view.setSequentialTimeLabel(seqTime);
         view.setThreadedTimeLabel(thrTime);
+        if (found == 92) {
+            service.resetAllRecognizedSolutions();
+            view.setFeedback("All 92 solutions found! Flags reset for new players.", false);
+        }
     }
     
 

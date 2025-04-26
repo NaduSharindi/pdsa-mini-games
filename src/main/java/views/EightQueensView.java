@@ -240,8 +240,8 @@ public class EightQueensView extends JPanel {
 	        feedbackLabel.setForeground(Color.RED);
 	        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16)); // for errors
 	    } else {
-	        feedbackLabel.setForeground(Color.GREEN);
-	        feedbackLabel.setFont(new Font("Arial", Font.PLAIN, 16)); // for information
+	        feedbackLabel.setForeground(new Color(0, 100, 0));
+	        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16)); // for information
 	    }
 	}
 	

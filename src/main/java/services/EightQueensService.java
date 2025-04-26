@@ -260,20 +260,16 @@ public class EightQueensService {
 	 */
 	
 	public void resetAllRecognizedSolutions() {
-		for(int i = 0; i < solutions.size(); i++) {
-			int[] solution = solutions.get(i);
-			EightQueensResult result = datastore.find(EightQueensResult.class)
-					.filter("positions", solution)
-					.first();
-			if(result != null) {
-				result.setRecognized(false);
-				result.setPlayerName(null);
-				result.setTimeTaken(0);
-				result.setTimestamp(null);
-				datastore.save(result);
-			}
-		}
+	    // Fetch ALL solutions from the database
+	    List<EightQueensResult> allResults = datastore.find(EightQueensResult.class).iterator().toList();
+	    
+	    for (EightQueensResult result : allResults) {
+	        result.setRecognized(false);
+	        result.setPlayerName(null);
+	        datastore.save(result);
+	    }
 	}
+
 	
 	/*
 	 * get number of solutions found.
