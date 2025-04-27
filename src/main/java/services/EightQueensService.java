@@ -9,6 +9,7 @@ import utils.dsa.ArrayList;
 import utils.dsa.HashSet;
 
 import dev.morphia.Datastore;
+import dev.morphia.DeleteOptions;
 import models.exceptions.DatabaseException;
 
 import java.util.Date;
@@ -46,29 +47,59 @@ public class EightQueensService {
 	 */
 	
 	public long findAllSolutionsSequential() {
-	    if (sequentialSolutionsExist()) {
-	        // Load solutions AND time from database
+	    // First check if solutions exist in DB
+	    if (datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Sequential")
+	            .count() >= 92) {
+	        
+	        // Clear existing in-memory data
 	        solutions = new ArrayList<>();
 	        solutionSet = new HashSet<>();
-	        List<EightQueensResult> results = datastore.find(EightQueensResult.class).iterator().toList();
-	        long timeTaken = 0;
+	        
+	        // Get time from database first (more efficient than loading all solutions)
+	        EightQueensResult timeResult = datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Sequential")
+	            .first();
+	        long timeTaken = timeResult != null ? timeResult.getTimeTaken() : 0;
+	        
+	        // Load solutions
+	        List<EightQueensResult> results = datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Sequential")
+	            .iterator().toList();
+	            
 	        for (EightQueensResult result : results) {
-	            solutions.add(result.getPositions());
-	            solutionSet.add(serialize(result.getPositions()));
-	            // Get time from the first sequential result
-	            if (result.getAlgorithmType().equals("Sequential")) {
-	                timeTaken = result.getTimeTaken();
-	                break; // Time is the same for all entries
+	            if (result.getPositions() != null) {
+	                solutions.add(result.getPositions());
+	                solutionSet.add(serialize(result.getPositions()));
 	            }
 	        }
 	        return timeTaken;
 	    } else {
-	        // Generate solutions and measure time
+	        // Generate and save solutions
+	        solutions = new ArrayList<>();
+	        solutionSet = new HashSet<>();
 	        long start = System.currentTimeMillis();
 	        solve(0, new int[SIZE]);
 	        long end = System.currentTimeMillis();
 	        long timeTaken = end - start;
-	        saveSolutions("Sequential", timeTaken);
+	        
+	        // Clear any existing solutions before saving
+	        datastore.delete(datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Sequential"));
+	            
+	        // Save new solutions
+	        for (int i = 0; i < solutions.size(); i++) {
+	            EightQueensResult result = new EightQueensResult(
+	                solutions.get(i),
+	                null,
+	                timeTaken,
+	                "Sequential",
+	                false,
+	                new Date()
+	            );
+	            datastore.save(result);
+	            
+	        }
 	        return timeTaken;
 	    }
 	}
@@ -91,6 +122,7 @@ public class EightQueensService {
 				board[column] = row;
 				solve(column + 1, board);
 			}
+			if (solutions.size() == 92) return;
 		}
 	}
 	
@@ -111,30 +143,41 @@ public class EightQueensService {
 	 */
 	
 	public long findAllSolutionsThreaded() {
-	    long timeTaken = 0;
-	    if (threadedSolutionsExist()) {
-	        // Just load solutions AND time from database
+	    // First check if solutions exist in DB
+	    if (datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Threaded")
+	            .count() >= 92) {
+	        
+	        // Clear existing in-memory data
 	        solutions = new ArrayList<>();
 	        solutionSet = new HashSet<>();
-	        for (EightQueensResult result : datastore.find(EightQueensResult.class)) {
-	        	int[] positions = result.getPositions();
-	        	if (positions != null) {
-	               solutions.add(positions);
-	               solutionSet.add(serialize(positions));
-	        	}
-	            // Get time from the first threaded result
-	            if ("Threaded".equals(result.getAlgorithmType()) && timeTaken == 0) {
-	                timeTaken = result.getTimeTaken();
+	        
+	        // Get time from database first (more efficient)
+	        EightQueensResult timeResult = datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Threaded")
+	            .first();
+	        long timeTaken = timeResult != null ? timeResult.getTimeTaken() : 0;
+	        
+	        // Load solutions
+	        List<EightQueensResult> results = datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Threaded")
+	            .iterator().toList();
+	            
+	        for (EightQueensResult result : results) {
+	            if (result.getPositions() != null) {
+	                solutions.add(result.getPositions());
+	                solutionSet.add(serialize(result.getPositions()));
 	            }
 	        }
 	        return timeTaken;
 	    } else {
-	        // Generate and save using threaded approach
+	        // Generate and save solutions
 	        solutions = new ArrayList<>();
 	        solutionSet = new HashSet<>();
+	        
 	        long start = System.currentTimeMillis();
-
 	        ExecutorService executor = Executors.newFixedThreadPool(SIZE);
+	        
 	        for (int row = 0; row < SIZE; row++) {
 	            final int startRow = row;
 	            executor.submit(() -> {
@@ -143,16 +186,33 @@ public class EightQueensService {
 	                solve(1, board);
 	            });
 	        }
+	        
 	        executor.shutdown();
 	        try {
 	            executor.awaitTermination(1, TimeUnit.MINUTES);
 	        } catch (InterruptedException e) {
 	            Thread.currentThread().interrupt();
 	        }
-
+	        
 	        long end = System.currentTimeMillis();
-	        timeTaken = end - start;
-	        saveSolutions("Threaded", timeTaken);
+	        long timeTaken = end - start;
+	        
+	        // Clear any existing solutions before saving
+	        datastore.delete(datastore.find(EightQueensResult.class)
+	            .filter("algorithmType", "Threaded"));
+	            
+	        // Save new solutions
+	        for (int i = 0; i < solutions.size(); i++) {
+	            EightQueensResult result = new EightQueensResult(
+	                solutions.get(i),
+	                null,
+	                timeTaken,
+	                "Threaded",
+	                false,
+	                new Date()
+	            );
+	            datastore.save(result);
+	        }
 	        return timeTaken;
 	    }
 	}
@@ -174,25 +234,7 @@ public class EightQueensService {
 		}
 		return sb.toString();
 	}
-	
-	/*
-	 * save found solutions in database
-	 */
-	
-	private void saveSolutions(String algorithmType, long timeTaken) {
-		for(int i = 0; i < solutions.size(); i++) {
-			int[] solution = solutions.get(i);
-			EightQueensResult result = new EightQueensResult(
-					solution,
-					null, // not player yet
-					timeTaken,
-					algorithmType,
-					false,  // not yet recognized
-					new Date()
-					);
-			datastore.save(result);
-		}
-	}
+
 	
     /**
      * Validate if a player's submitted solution is correct and not already claimed.
@@ -203,22 +245,6 @@ public class EightQueensService {
 	public boolean validatePlayerSolution(int[] positions) {
 		String key = serialize(positions);
 		return solutionSet.contains(key);
-	}
-	
-	/*
-	 * check only 92 solutions in database once
-	 */
-	
-	private boolean sequentialSolutionsExist() {
-	    return datastore.find(EightQueensResult.class)
-	        .filter("algorithmType", "Sequential")
-	        .count() >= 92;
-	}
-
-	private boolean threadedSolutionsExist() {
-	    return datastore.find(EightQueensResult.class)
-	        .filter("algorithmType", "Threaded")
-	        .count() >= 92;
 	}
 
 	

@@ -226,11 +226,12 @@ public class EightQueensView extends JPanel {
 	    remainingSolutionsLabel.setText("Remaining: " + remaining);
 	}
 	
-	public void setSequentialTimeLabel(long timeMs) {
-	    sequentialTimeLabel.setText("Sequential Time: " + timeMs + " ms");
+	public void setSequentialTimeLabel(long time) {
+	    sequentialTimeLabel.setText("Sequential Time: " + time + " ms");
 	}
-	public void setThreadedTimeLabel(long timeMs) {
-	    threadedTimeLabel.setText("Threaded Time: " + timeMs + " ms");
+
+	public void setThreadedTimeLabel(long time) {
+	    threadedTimeLabel.setText("Threaded Time: " + time + " ms");
 	}
 
 	

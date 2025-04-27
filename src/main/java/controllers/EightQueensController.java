@@ -15,12 +15,15 @@ public class EightQueensController {
     private EightQueensView view;
     private EightQueensService service;
     private JFrame frame;
+    
+    private long sequentialTime;
+    private long threadedTime;
 
     public EightQueensController(EightQueensView view, EightQueensService service) {
         this.view = view;
         this.service = service;
-        service.findAllSolutionsSequential();
-        service.findAllSolutionsThreaded();
+        sequentialTime =  service.findAllSolutionsSequential();
+        threadedTime = service.findAllSolutionsThreaded();
         initListeners();
         updateSolutionsFound();
     }
@@ -157,11 +160,9 @@ public class EightQueensController {
         int remaining = total - found;
         view.setSolutionsFound(found);
         view.setRemainingSolutions(remaining);
-        
-        long seqTime = service.findAllSolutionsSequential();
-        long thrTime = service.findAllSolutionsThreaded();
-        view.setSequentialTimeLabel(seqTime);
-        view.setThreadedTimeLabel(thrTime);
+    
+        view.setSequentialTimeLabel(sequentialTime); 
+        view.setThreadedTimeLabel(threadedTime);
         if (found == 92) {
             service.resetAllRecognizedSolutions();
             view.setFeedback("All 92 solutions found! Flags reset for new players.", false);
