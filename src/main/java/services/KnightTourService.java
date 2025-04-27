@@ -1,15 +1,22 @@
 package services;
 
+import java.util.List;
+
+import models.entities.KnightTourResult;
+import models.entities.Position;
+import models.exceptions.DatabaseException;
+import utils.DatabaseConnection;
 import utils.constants.KnightTourConstant;
 import utils.dsa.bruteforce2.BruteForce2;
 import utils.dsa.warnsdorff.Warnsdorff;
 
 public class KnightTourService {
-	//data structures to store game data
+	// data structures to store game data
 	private boolean[][] visited;
 	private int visitedCount;
 	private int[][] calculatedMovements;
-	
+	private int[][] userManualMovement;
+
 	/**
 	 * Initialize initial values
 	 */
@@ -17,8 +24,20 @@ public class KnightTourService {
 		visited = new boolean[KnightTourConstant.BOARD_SIZE][KnightTourConstant.BOARD_SIZE];
 		visitedCount = 0;
 		calculatedMovements = new int[KnightTourConstant.BOARD_SIZE][KnightTourConstant.BOARD_SIZE];
+		userManualMovement = new int[KnightTourConstant.BOARD_SIZE][KnightTourConstant.BOARD_SIZE];
 	}
-	
+
+	/**
+	 * save data into the database
+	 * 
+	 * @throws DatabaseException
+	 */
+	public void saveResult(String playerName, String algorithm, List<Position> path, long timeTaken)
+			throws DatabaseException {
+		DatabaseConnection dc = DatabaseConnection.getInstance();
+		dc.getDatastore().save(new KnightTourResult(playerName, algorithm, path, timeTaken));
+	}
+
 	/**
 	 * Find solutions using brute force algorithm
 	 * 
@@ -30,7 +49,7 @@ public class KnightTourService {
 		algorithm.calculate(startRow, startCol);
 		calculatedMovements = algorithm.getBoard();
 	}
-	
+
 	/**
 	 * find solutions using warnsdorff algorithm
 	 * 
@@ -43,7 +62,7 @@ public class KnightTourService {
 		calculatedMovements = algorithm.getBoard();
 	}
 
-	//getters and setters for service
+	// getters and setters for service
 	public boolean[][] getVisited() {
 		return visited;
 	}
@@ -62,5 +81,13 @@ public class KnightTourService {
 
 	public int[][] getCalculatedMovements() {
 		return calculatedMovements;
+	}
+
+	public int[][] getUserManualMovement() {
+		return userManualMovement;
+	}
+
+	public void setUserManualMovement(int[][] userManualMovement) {
+		this.userManualMovement = userManualMovement;
 	}
 }

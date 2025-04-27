@@ -46,7 +46,7 @@ public class BruteForce2 {
 	 */
 	private boolean calculate(int row, int col, int moveCount) {
 		// check move count reached to game board size
-		if (moveCount == this.boardSize * this.boardSize - 1) {
+		if (moveCount == this.boardSize * this.boardSize) {
 			return true;
 		}
 
