@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import utils.constants.KnightTourConstant;
-import utils.constants.TravelingSalesManConstants;
 
 public class KnightTourView extends JFrame {
 
@@ -147,4 +146,15 @@ public class KnightTourView extends JFrame {
 	public void setBruteForceBtn(JButton bruteForceBtn) {
 		this.bruteForceBtn = bruteForceBtn;
 	}
+
+	
+	public JButton getWarnsdorffBtn() {
+		return warnsdorffBtn;
+	}
+
+	
+	public void setWarnsdorffBtn(JButton warnsdorffBtn) {
+		this.warnsdorffBtn = warnsdorffBtn;
+	}
+
 }

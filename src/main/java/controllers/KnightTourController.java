@@ -72,38 +72,61 @@ public class KnightTourController {
 		this.view.getBruteForceBtn().addActionListener(event -> {
 			this.useBruteForceAlgorithm();
 		});
+		
+		//initialize the warnsdorff algorithm solutions find button event listener
+		this.view.getWarnsdorffBtn().addActionListener(event->{
+			this.warnsdorffAlgorithm();
+		});
 	}
 
 	/**
-	 * event for find solutions using brute force algorithm
+	 * event handler for find solutions using warnsdorff algorithm
+	 */
+	private void warnsdorffAlgorithm() {
+		try {
+			//find solution from service
+			this.service.useWarnsdorffAlgorithm(this.view.getKnightRow(), this.view.getKnightCol());
+			//map solution into the game map
+			this.mapSolution();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this.view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	
+	/**
+	 * event handler for find solutions using brute force algorithm
 	 */
 	private void useBruteForceAlgorithm() {
-		//clear the user selection window
-		
-		
 		try {
 			// find solution from service
 			this.service.useBruteForceAlgorithm(this.view.getKnightRow(), this.view.getKnightCol());
-
-			// map the solution into game map
-			for (int i = 0; i < KnightTourConstant.BOARD_SIZE; i++) {
-				for (int j = 0; j < KnightTourConstant.BOARD_SIZE; j++) {
-					// remove click events from buttons
-					if (this.view.getBoardButtons()[i][j] != null) {
-						for (ActionListener listener : this.view.getBoardButtons()[i][j].getActionListeners()) {
-							this.view.getBoardButtons()[i][j].removeActionListener(listener);
-						}
-					}
-
-					// add text to the button
-					if (this.service.getCalculatedMovements()[i][j] != -1) {
-						this.view.getBoardButtons()[i][j]
-								.setText(String.valueOf(this.service.getCalculatedMovements()[i][j]));
-					}
-				}
-			}
+			//map solution into the game map
+			this.mapSolution();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this.view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	/**
+	 * map the solution into game map
+	 */
+	private void mapSolution() {
+		for (int i = 0; i < KnightTourConstant.BOARD_SIZE; i++) {
+			for (int j = 0; j < KnightTourConstant.BOARD_SIZE; j++) {
+				// remove click events from the board game panel
+				if (this.view.getBoardButtons()[i][j] != null) {
+					for (ActionListener listener : this.view.getBoardButtons()[i][j].getActionListeners()) {
+						this.view.getBoardButtons()[i][j].removeActionListener(listener);
+					}
+				}
+
+				// add text to the button
+				if (this.service.getCalculatedMovements()[i][j] != -1) {
+					this.view.getBoardButtons()[i][j]
+							.setText(String.valueOf(this.service.getCalculatedMovements()[i][j]));
+				}
+			}
 		}
 	}
 

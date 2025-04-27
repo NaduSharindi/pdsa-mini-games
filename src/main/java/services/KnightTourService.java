@@ -2,6 +2,7 @@ package services;
 
 import utils.constants.KnightTourConstant;
 import utils.dsa.bruteforce2.BruteForce2;
+import utils.dsa.warnsdorff.Warnsdorff;
 
 public class KnightTourService {
 	//data structures to store game data
@@ -29,6 +30,18 @@ public class KnightTourService {
 		algorithm.calculate(startRow, startCol);
 		calculatedMovements = algorithm.getBoard();
 	}
+	
+	/**
+	 * find solutions using warnsdorff algorithm
+	 * 
+	 * @param knightRow
+	 * @param knightCol
+	 */
+	public void useWarnsdorffAlgorithm(int startRow, int startCol) {
+		Warnsdorff algorithm = new Warnsdorff(KnightTourConstant.BOARD_SIZE);
+		algorithm.calculate(startRow, startCol);
+		calculatedMovements = algorithm.getBoard();
+	}
 
 	//getters and setters for service
 	public boolean[][] getVisited() {
@@ -50,5 +63,4 @@ public class KnightTourService {
 	public int[][] getCalculatedMovements() {
 		return calculatedMovements;
 	}
-
 }
