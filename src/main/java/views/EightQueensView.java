@@ -20,13 +20,21 @@ public class EightQueensView extends JPanel {
     private JButton[][] boardButtons;
     private JButton submitButton;
     private JButton resetButton;
+    private JButton backToMenuButton;
+    private JLabel welcomeLabel;
     private JLabel feedbackLabel;
     private JTextField playerNameField;
     private JLabel solutionsFoundLabel;
     private JLabel remainingSolutionsLabel;
+    private JLabel sequentialTimeLabel;
+    private JLabel threadedTimeLabel;
 
 	public EightQueensView() {
 		setLayout(new BorderLayout());
+        welcomeLabel = new JLabel("Welcome to the Eight Queens Puzzle!", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Serif", Font.BOLD, 28));
+        add(welcomeLabel, BorderLayout.NORTH);
+        
         JPanel boardPanel = new JPanel(new GridLayout(SIZE, SIZE));
         boardButtons = new JButton[SIZE][SIZE];
         
@@ -40,31 +48,92 @@ public class EightQueensView extends JPanel {
                 boardPanel.add(btn);
             }
         }
-        
-        //Control panel
-        JPanel controlPanel = new JPanel(new FlowLayout());
-        playerNameField = new JTextField(10);
-        submitButton = new JButton("Submit Solution");
-        resetButton = new JButton("Reset Board");
-        solutionsFoundLabel = new JLabel("Solutions found: 0");
-        remainingSolutionsLabel = new JLabel("Remaining: 92");
-        
-        
-        controlPanel.add(new JLabel("Player Name:"));
-        controlPanel.add(playerNameField);
-        controlPanel.add(submitButton);
-        controlPanel.add(resetButton);
-        controlPanel.add(solutionsFoundLabel);
-        controlPanel.add(remainingSolutionsLabel);
-        
-        //Feedback Label
-        feedbackLabel = new JLabel("Welcome to the Eight Queens Puzzle!");
-        feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
         add(boardPanel, BorderLayout.CENTER);
-        add(controlPanel, BorderLayout.NORTH);
-        add(feedbackLabel, BorderLayout.SOUTH);
         
+        // Game information panel
+        Font bigFont = new Font("Arial", Font.BOLD, 16);
+        Color blue = new Color(0, 0, 180);
+        
+        solutionsFoundLabel = new JLabel("Solutions found: 0");
+        solutionsFoundLabel.setFont(bigFont);
+        solutionsFoundLabel.setForeground(blue);
+        remainingSolutionsLabel = new JLabel("Remaining: 92");
+        remainingSolutionsLabel.setFont(bigFont);
+        remainingSolutionsLabel.setForeground(blue);
+        sequentialTimeLabel = new JLabel("Sequential Time: 0ms");
+        sequentialTimeLabel.setFont(bigFont);
+        sequentialTimeLabel.setForeground(blue);
+        threadedTimeLabel = new JLabel("Threaded Time: 0ms");
+        threadedTimeLabel.setFont(bigFont);
+        threadedTimeLabel.setForeground(blue);
+        
+        JPanel playerPanel = new JPanel();
+        playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
+        playerPanel.setOpaque(false);
+
+        JLabel nameLabel = new JLabel("Player Name:");
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
+        playerNameField = new JTextField(12);
+        playerNameField.setMaximumSize(new Dimension(360, 30));
+        playerNameField.setFont(new Font("Arial", Font.PLAIN, 18));
+        
+        Dimension buttonSize = new Dimension(180, 40);
+        submitButton = new JButton("Submit Solution");
+        submitButton.setPreferredSize(buttonSize);
+        submitButton.setMaximumSize(buttonSize);
+        submitButton.setFont(new Font("Arial", Font.BOLD, 18));
+        submitButton.setBackground(Color.BLUE); 
+        submitButton.setForeground(Color.WHITE);
+        resetButton = new JButton("Reset Board");
+        resetButton.setPreferredSize(buttonSize);
+        resetButton.setMaximumSize(buttonSize);
+        resetButton.setFont(new Font("Arial", Font.BOLD, 18));
+        resetButton.setBackground(Color.YELLOW); 
+        resetButton.setForeground(Color.BLACK);
+        backToMenuButton = new JButton("Back to Menu");
+        backToMenuButton.setPreferredSize(buttonSize);
+        backToMenuButton.setMaximumSize(buttonSize);
+        backToMenuButton.setFont(new Font("Arial", Font.BOLD, 18));
+        backToMenuButton.setBackground(Color.green);
+        backToMenuButton.setForeground(Color.BLACK);
+
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 18)));
+        playerPanel.add(nameLabel);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        playerPanel.add(playerNameField);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        playerPanel.add(submitButton);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        playerPanel.add(resetButton);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        playerPanel.add(backToMenuButton);
+        playerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        JPanel eastPanel = new JPanel();
+        eastPanel.setBorder(BorderFactory.createEmptyBorder(0, 32, 0, 0));
+        eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
+        eastPanel.setOpaque(false);
+
+        eastPanel.add(Box.createRigidArea(new Dimension(0, 24)));
+        eastPanel.add(solutionsFoundLabel);
+        eastPanel.add(Box.createRigidArea(new Dimension(0, 18)));
+        eastPanel.add(remainingSolutionsLabel);
+        eastPanel.add(Box.createRigidArea(new Dimension(0, 18)));
+        eastPanel.add(sequentialTimeLabel);
+        eastPanel.add(Box.createRigidArea(new Dimension(0, 18)));
+        eastPanel.add(threadedTimeLabel);
+        eastPanel.add(Box.createRigidArea(new Dimension(0, 32)));
+        eastPanel.add(playerPanel);
+        eastPanel.add(Box.createVerticalGlue());
+
+        add(eastPanel, BorderLayout.EAST);
+        
+       
+        feedbackLabel = new JLabel(" ");
+        feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        playerPanel.add(feedbackLabel);  
 	}
 	
 	/*
@@ -86,6 +155,11 @@ public class EightQueensView extends JPanel {
 	public void setResetButtonListener(ActionListener listener) {
 		resetButton.addActionListener(listener);
 	}
+	
+	public void setBackToMenuButtonListener(ActionListener listener) {
+	    backToMenuButton.addActionListener(listener);
+	}
+
 	
 	/*
 	 * Get current board state as 
@@ -130,6 +204,11 @@ public class EightQueensView extends JPanel {
     public JButton[][] getBoardButtons() {
         return boardButtons;
     }
+    
+	public JButton getBackToMenuButton() {
+	    return backToMenuButton;
+	}
+	
 	
 	public String getPlayerName() {
 		return playerNameField.getText().trim();
@@ -147,6 +226,29 @@ public class EightQueensView extends JPanel {
 	    remainingSolutionsLabel.setText("Remaining: " + remaining);
 	}
 	
+	public void setSequentialTimeLabel(long time) {
+	    sequentialTimeLabel.setText("Sequential Time: " + time + " ms");
+	}
+
+	public void setThreadedTimeLabel(long time) {
+	    threadedTimeLabel.setText("Threaded Time: " + time + " ms");
+	}
+
+	
+	public void setFeedback(String message, boolean isError) {
+	    feedbackLabel.setText(message);
+	    if (isError) {
+	        feedbackLabel.setForeground(Color.RED);
+	        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16)); // for errors
+	    } else {
+	        feedbackLabel.setForeground(new Color(0, 100, 0));
+	        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 16)); // for information
+	    }
+	}
+	
+	public void clearPlayerNameField() {
+		playerNameField.setText("");
+	}
 	/*
 	 * toggle queen on button click
 	 */
