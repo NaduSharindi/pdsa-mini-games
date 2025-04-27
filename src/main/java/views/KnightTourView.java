@@ -3,6 +3,7 @@ package views;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import javax.swing.ImageIcon;
@@ -25,6 +26,8 @@ public class KnightTourView extends JFrame {
 	private ImageIcon knightIcon;
 	private JPanel boardPanel;
 	private JButton newGameButton;
+	private JButton bruteForceBtn;
+	private JButton warnsdorffBtn;
 
 	/**
 	 * Launch the application.
@@ -67,9 +70,13 @@ public class KnightTourView extends JFrame {
 		this.setLayout(new BorderLayout());
 
 		// Top panel with New Game button
-		JPanel topPanel = new JPanel();
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		newGameButton = new JButton("New Game");
+		bruteForceBtn = new JButton("BruteForce Algorithm Solution");
+		warnsdorffBtn = new JButton("Warnsdorff Algorithm Solution");
 		topPanel.add(newGameButton);
+		topPanel.add(bruteForceBtn);
+		topPanel.add(warnsdorffBtn);
 		this.contentPane.add(topPanel, BorderLayout.NORTH);
 
 		// game panel and game buttons
@@ -131,5 +138,13 @@ public class KnightTourView extends JFrame {
 
 	public void setNewGameButton(JButton newGameButton) {
 		this.newGameButton = newGameButton;
+	}
+
+	public JButton getBruteForceBtn() {
+		return bruteForceBtn;
+	}
+
+	public void setBruteForceBtn(JButton bruteForceBtn) {
+		this.bruteForceBtn = bruteForceBtn;
 	}
 }

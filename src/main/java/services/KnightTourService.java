@@ -1,18 +1,33 @@
 package services;
 
 import utils.constants.KnightTourConstant;
+import utils.dsa.bruteforce2.BruteForce2;
 
 public class KnightTourService {
 	//data structures to store game data
 	private boolean[][] visited;
 	private int visitedCount;
-
+	private int[][] calculatedMovements;
+	
 	/**
 	 * Initialize initial values
 	 */
 	public KnightTourService() {
 		visited = new boolean[KnightTourConstant.BOARD_SIZE][KnightTourConstant.BOARD_SIZE];
 		visitedCount = 0;
+		calculatedMovements = new int[KnightTourConstant.BOARD_SIZE][KnightTourConstant.BOARD_SIZE];
+	}
+	
+	/**
+	 * Find solutions using brute force algorithm
+	 * 
+	 * @param startRow
+	 * @param startCol
+	 */
+	public void useBruteForceAlgorithm(int startRow, int startCol) {
+		BruteForce2 algorithm = new BruteForce2(KnightTourConstant.BOARD_SIZE);
+		algorithm.calculate(startRow, startCol);
+		calculatedMovements = algorithm.getBoard();
 	}
 
 	//getters and setters for service
@@ -30,5 +45,10 @@ public class KnightTourService {
 
 	public void setVisitedCount(int visitedCount) {
 		this.visitedCount = visitedCount;
-	}	
+	}
+
+	public int[][] getCalculatedMovements() {
+		return calculatedMovements;
+	}
+
 }
