@@ -22,9 +22,11 @@ import controllers.TowerOfHanoiController;
 import services.TowerOfHanoiService;
 
 import services.EightQueensService;
+import services.KnightTourService;
 import views.EightQueensView;
+import views.KnightTourView;
 import controllers.EightQueensController;
-
+import controllers.KnightTourController;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -47,6 +49,11 @@ public class Home extends JFrame {
      EightQueensService eightQueensService;
      EightQueensView eightQueensView;
      EightQueensController eightQueensController;
+     
+    // dependencies of knight tour game
+     KnightTourService knightTourService;
+     KnightTourView knightTourView;
+     KnightTourController knightTourController;
 
 	
 	/**
@@ -126,23 +133,20 @@ public class Home extends JFrame {
 						JOptionPane.showMessageDialog(null, "not implemented");
 						break;
 					case "salesManIcon":
-						//TODO traveling sales man game controller method
 						initializeDependencies();
 						salesManController.showView();
 						break;
 					case "hanoiIcon":
-						//TODO tower of hanoi game controller method
 						initializeDependencies();
 						hanoiController.showView();
 						break;
 					case "queensIcon":
-						//TODO eight queens game controller method
 						initializeDependencies();
 						eightQueensController.showView();
 						break;
 					case "knightsIcon":
-						//TODO knights tour game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						knightTourController.showView();
 						break;
 					default:
 						JOptionPane.showMessageDialog(null, "game is not defined");
@@ -177,6 +181,11 @@ public class Home extends JFrame {
         this.eightQueensService = new EightQueensService();
         this.eightQueensView = new EightQueensView();
         this.eightQueensController = new EightQueensController(eightQueensView, eightQueensService);
+        
+        //initialize the knight tour game dependencies
+        this.knightTourService = new KnightTourService();
+        this.knightTourView = new KnightTourView();
+        this.knightTourController = new KnightTourController(knightTourService, knightTourView);
 	
 	}
 
