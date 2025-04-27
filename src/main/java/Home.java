@@ -17,6 +17,17 @@ import controllers.TravelingSalesManController;
 import services.TravelingSalesManService;
 import views.TravelingSalesManView;
 
+import views.TowerOfHanoiView; 
+import controllers.TowerOfHanoiController; 
+import services.TowerOfHanoiService;
+
+import services.EightQueensService;
+import services.KnightTourService;
+import views.EightQueensView;
+import views.KnightTourView;
+import controllers.EightQueensController;
+import controllers.KnightTourController;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
@@ -28,6 +39,22 @@ public class Home extends JFrame {
 	TravelingSalesManService salesManService;
 	TravelingSalesManView salesManView;
 	TravelingSalesManController salesManController;
+	
+    // dependencies of the Tower of Hanoi game
+    TowerOfHanoiView hanoiView;
+    TowerOfHanoiController hanoiController;
+    TowerOfHanoiService hanoiService;
+    
+    //dependencies of Eight Queens Puzzle Game
+     EightQueensService eightQueensService;
+     EightQueensView eightQueensView;
+     EightQueensController eightQueensController;
+     
+    // dependencies of knight tour game
+     KnightTourService knightTourService;
+     KnightTourView knightTourView;
+     KnightTourController knightTourController;
+
 	
 	/**
 	 * Launch the application.
@@ -106,20 +133,20 @@ public class Home extends JFrame {
 						JOptionPane.showMessageDialog(null, "not implemented");
 						break;
 					case "salesManIcon":
-						//TODO traveling sales man game controller method
+						initializeDependencies();
 						salesManController.showView();
 						break;
 					case "hanoiIcon":
-						//TODO tower of hanoi game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						hanoiController.showView();
 						break;
 					case "queensIcon":
-						//TODO eight queens game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						eightQueensController.showView();
 						break;
 					case "knightsIcon":
-						//TODO knights tour game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						knightTourController.showView();
 						break;
 					default:
 						JOptionPane.showMessageDialog(null, "game is not defined");
@@ -139,9 +166,27 @@ public class Home extends JFrame {
 	 *  method for initialize dependencies
 	 */
 	private void initializeDependencies() {
+		//Traveling salesman dependencies
 		this.salesManService = new TravelingSalesManService();
 		this.salesManView = new TravelingSalesManView();
 		this.salesManController = new TravelingSalesManController(salesManService, salesManView);
+		
+		
+	    // Tower of Hanoi dependencies
+	    this.hanoiView = new TowerOfHanoiView();
+	    this.hanoiService = new TowerOfHanoiService();
+	    this.hanoiController = new TowerOfHanoiController(hanoiService, hanoiView);
+	    
+	    // Eight Queens Puzzle dependencies
+        this.eightQueensService = new EightQueensService();
+        this.eightQueensView = new EightQueensView();
+        this.eightQueensController = new EightQueensController(eightQueensView, eightQueensService);
+        
+        //initialize the knight tour game dependencies
+        this.knightTourService = new KnightTourService();
+        this.knightTourView = new KnightTourView();
+        this.knightTourController = new KnightTourController(knightTourService, knightTourView);
+	
 	}
 
 }
