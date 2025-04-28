@@ -102,7 +102,7 @@ public class KnightTourController {
 			this.service.useWarnsdorffAlgorithm(this.view.getKnightRow(), this.view.getKnightCol());
 			// map solution into the game map
 			this.mapSolution();
-			
+
 			// save data into the database
 			long end = System.nanoTime();
 			this.saveResult("COMPUTER", "Warnsdorff Algorithm", this.service.getCalculatedMovements(), end - start);
@@ -120,7 +120,7 @@ public class KnightTourController {
 			this.service.useBruteForceAlgorithm(this.view.getKnightRow(), this.view.getKnightCol());
 			// map solution into the game map
 			this.mapSolution();
-			
+
 			// save data into the database
 			long end = System.nanoTime();
 			this.saveResult("COMPUTER", "Brute Force Algorithm", this.service.getCalculatedMovements(), end - start);
@@ -133,21 +133,25 @@ public class KnightTourController {
 	 * map the solution into game map
 	 */
 	private void mapSolution() {
-		for (int i = 0; i < KnightTourConstant.BOARD_SIZE; i++) {
-			for (int j = 0; j < KnightTourConstant.BOARD_SIZE; j++) {
-				// remove click events from the board game panel
-				if (this.view.getBoardButtons()[i][j] != null) {
-					for (ActionListener listener : this.view.getBoardButtons()[i][j].getActionListeners()) {
-						this.view.getBoardButtons()[i][j].removeActionListener(listener);
+		try {
+			for (int i = 0; i < KnightTourConstant.BOARD_SIZE; i++) {
+				for (int j = 0; j < KnightTourConstant.BOARD_SIZE; j++) {
+					// remove click events from the board game panel
+					if (this.view.getBoardButtons()[i][j] != null) {
+						for (ActionListener listener : this.view.getBoardButtons()[i][j].getActionListeners()) {
+							this.view.getBoardButtons()[i][j].removeActionListener(listener);
+						}
+					}
+
+					// add text to the button
+					if (this.service.getCalculatedMovements()[i][j] != -1) {
+						this.view.getBoardButtons()[i][j]
+								.setText(String.valueOf(this.service.getCalculatedMovements()[i][j]));
 					}
 				}
-
-				// add text to the button
-				if (this.service.getCalculatedMovements()[i][j] != -1) {
-					this.view.getBoardButtons()[i][j]
-							.setText(String.valueOf(this.service.getCalculatedMovements()[i][j]));
-				}
 			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this.view, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

@@ -1,6 +1,5 @@
 package models.entities;
 
-import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 
 @Entity
