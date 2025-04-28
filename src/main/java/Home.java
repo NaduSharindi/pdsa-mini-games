@@ -28,12 +28,23 @@ import views.KnightTourView;
 import controllers.EightQueensController;
 import controllers.KnightTourController;
 
+import controllers.TicTacToeController;
+import services.TicTacToeService;
+import services.TicTacToeAI;
+import views.TicTacToeView;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 public class Home extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	
+	//dependencies of the TicTacToe Game
+	TicTacToeService ticTacToeService;
+	TicTacToeAI ticTacToeAI;
+	TicTacToeView ticTacToeView;
+	TicTacToeController ticTacToeController;
 	
 	//dependencies of the application initialization
 	TravelingSalesManService salesManService;
@@ -129,8 +140,8 @@ public class Home extends JFrame {
 					// TODO Auto-generated method stub
 					switch (e.getComponent().getName()) {
 					case "ticTacToeIcon":
-						//TODO tic-tac-toe game controller method
-						JOptionPane.showMessageDialog(null, "not implemented");
+						initializeDependencies();
+						ticTacToeController.showView();
 						break;
 					case "salesManIcon":
 						initializeDependencies();
@@ -166,6 +177,13 @@ public class Home extends JFrame {
 	 *  method for initialize dependencies
 	 */
 	private void initializeDependencies() {
+		
+		//TicTacToe dependencies
+		this.ticTacToeService = new TicTacToeService();
+		this.ticTacToeAI = new TicTacToeAI();
+		this.ticTacToeView = new TicTacToeView();
+		this.ticTacToeController = new TicTacToeController(ticTacToeView,ticTacToeService);
+		
 		//Traveling salesman dependencies
 		this.salesManService = new TravelingSalesManService();
 		this.salesManView = new TravelingSalesManView();
