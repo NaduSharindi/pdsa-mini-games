@@ -79,6 +79,15 @@ public class ArrayList<T> {
             elements = Arrays.copyOf(elements, newCapacity);
         }
     }
+    
+    public void clear() {
+        // Remove references for GC and reset size
+        for (int i = 0; i < size; i++) {
+            elements[i] = null;
+        }
+        size = 0;
+    }
+
 
     /**
      * Returns a string representation of the list.

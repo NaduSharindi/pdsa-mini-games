@@ -9,35 +9,32 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.PrePersist;
 
-@Entity("travelingsalesmanresult")
-public class TravelingSalesManResult {
+@Entity("knighttourresult")
+public class KnightTourResult {
 	@Id
 	private ObjectId id;
 	private String name;
 	private String algorithm;
-	private String sourceCity;
-	private List<String> destinationCities;
+	private List<Position> path;
 	private long timeTaken;
 	private LocalDateTime lastCreated;
 
-	public TravelingSalesManResult() {
+	public KnightTourResult() {
 	}
 
-	public TravelingSalesManResult(String name, String algorithm, String sourceCity,
-			List<String> destinationCities, long timeTaken) {
+	public KnightTourResult(String name, String algorithm, List<Position> path, long timeTaken) {
 		this.name = name;
 		this.algorithm = algorithm;
-		this.sourceCity = sourceCity;
-		this.destinationCities = destinationCities;
+		this.path = path;
 		this.timeTaken = timeTaken;
 	}
-	
-    @PrePersist
-    void prePersist() {
-        if (lastCreated == null) {
-        	lastCreated = LocalDateTime.now();
-        }
-    }
+
+	@PrePersist
+	void prePersist() {
+		if (lastCreated == null) {
+			lastCreated = LocalDateTime.now();
+		}
+	}
 
 	public ObjectId getId() {
 		return id;
@@ -63,20 +60,12 @@ public class TravelingSalesManResult {
 		this.algorithm = algorithm;
 	}
 
-	public String getSourceCity() {
-		return sourceCity;
+	public List<Position> getPath() {
+		return path;
 	}
 
-	public void setSourceCity(String sourceCity) {
-		this.sourceCity = sourceCity;
-	}
-
-	public List<String> getDestinationCities() {
-		return destinationCities;
-	}
-
-	public void setDestinationCities(List<String> destinationCities) {
-		this.destinationCities = destinationCities;
+	public void setPath(List<Position> path) {
+		this.path = path;
 	}
 
 	public long getTimeTaken() {
