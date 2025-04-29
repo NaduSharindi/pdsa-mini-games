@@ -6,69 +6,74 @@ import java.awt.event.ActionListener;
 import java.util.function.BiConsumer;
 
 public class TicTacToeView extends JPanel {
-    private static final int BOARD_SIZE = 5;
+    private static final int BOARD_SIZE = 5;  // Size of the Tic-Tac-Toe board (5x5)
 
-    private final JButton[][] boardButtons;
-    private final JLabel statusLabel;
-    private final JLabel algorithmLabel;
-    private final JButton toggleAlgorithmButton;
-    private final JButton newGameButton;
-    private final JButton backToMenuButton; 
-    private static final char HUMAN = 'X';  // Player's symbol
-    private static final char COMPUTER = 'O';  // AI's symbol
-    private int lastMoveRow = -1;
-    private int lastMoveCol = -1;
+    private final JButton[][] boardButtons;  // 2D array to hold the buttons on the board
+    private final JLabel statusLabel;  // Label to show game status (e.g., "Game Over")
+    private final JLabel algorithmLabel;  // Label to display the current AI algorithm
+    private final JButton toggleAlgorithmButton;  // Button to toggle between algorithms
+    private final JButton newGameButton;  // Button to start a new game
+    private final JButton backToMenuButton;  // Button to return to the main menu
+    private static final char HUMAN = 'X';  // Player's symbol (X)
+    private static final char COMPUTER = 'O';  // AI's symbol (O)
+    private int lastMoveRow = -1;  // The row of the last move made
+    private int lastMoveCol = -1;  // The column of the last move made
 
 
     public TicTacToeView() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout());  // Set layout manager for the panel
 
         // Board panel (5x5 grid)
-        JPanel boardPanel = new JPanel(new GridLayout(BOARD_SIZE, BOARD_SIZE));
-        boardButtons = new JButton[BOARD_SIZE][BOARD_SIZE];
+        JPanel boardPanel = new JPanel(new GridLayout(BOARD_SIZE, BOARD_SIZE));  // Grid layout for the board
+        boardButtons = new JButton[BOARD_SIZE][BOARD_SIZE];  // Initialize the board buttons
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
-                boardButtons[i][j] = new JButton("");
-                boardButtons[i][j].setFont(new Font("Arial", Font.BOLD, 28));
-                boardButtons[i][j].setFocusPainted(false);
-                boardButtons[i][j].setPreferredSize(new Dimension(70, 70));
-                boardPanel.add(boardButtons[i][j]);
+                boardButtons[i][j] = new JButton("");  // Create an empty button
+                boardButtons[i][j].setFont(new Font("Arial", Font.BOLD, 28));  // Set button font
+                boardButtons[i][j].setFocusPainted(false);  // Disable focus paint for buttons
+                boardButtons[i][j].setPreferredSize(new Dimension(70, 70));  // Set button size
+                boardPanel.add(boardButtons[i][j]);  // Add button to the panel
             }
         }
 
         // Status and controls panel
-        JPanel statusPanel = new JPanel();
-        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
+        JPanel statusPanel = new JPanel();  // Panel to hold the status labels and buttons
+        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));  // Set vertical layout
 
-        statusLabel = new JLabel("Welcome to Tic-Tac-Toe!");
-        statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Status label
+        statusLabel = new JLabel("Welcome to Tic-Tac-Toe!");  // Initial status text
+        statusLabel.setFont(new Font("Arial", Font.BOLD, 16));  // Set font for status label
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Center align the label
 
-        algorithmLabel = new JLabel("AI Algorithm: Minimax");
-        algorithmLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        algorithmLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Algorithm label
+        algorithmLabel = new JLabel("AI Algorithm: Minimax");  // Initial algorithm text
+        algorithmLabel.setFont(new Font("Arial", Font.PLAIN, 14));  // Set font for algorithm label
+        algorithmLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Center align the label
 
-        JPanel buttonsPanel = new JPanel();
-        toggleAlgorithmButton = new JButton("Toggle Algorithm");
-        toggleAlgorithmButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        newGameButton = new JButton("New Game");
-        newGameButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        backToMenuButton = new JButton("Back to Main Menu");
-        backToMenuButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        buttonsPanel.add(toggleAlgorithmButton);
-        buttonsPanel.add(newGameButton);
-        buttonsPanel.add(backToMenuButton);
+        // Panel for action buttons
+        JPanel buttonsPanel = new JPanel();  
+        toggleAlgorithmButton = new JButton("Toggle Algorithm");  // Button to toggle algorithm
+        toggleAlgorithmButton.setFont(new Font("Arial", Font.PLAIN, 14));  // Set font for the button
+        newGameButton = new JButton("New Game");  // Button to start a new game
+        newGameButton.setFont(new Font("Arial", Font.PLAIN, 14));  // Set font for the button
+        backToMenuButton = new JButton("Back to Main Menu");  // Button to return to main menu
+        backToMenuButton.setFont(new Font("Arial", Font.PLAIN, 14));  // Set font for the button
+        buttonsPanel.add(toggleAlgorithmButton);  // Add toggle button to panel
+        buttonsPanel.add(newGameButton);  // Add new game button to panel
+        buttonsPanel.add(backToMenuButton);  // Add back to menu button to panel
 
-        statusPanel.add(Box.createVerticalStrut(10));
-        statusPanel.add(statusLabel);
-        statusPanel.add(Box.createVerticalStrut(5));
-        statusPanel.add(algorithmLabel);
-        statusPanel.add(Box.createVerticalStrut(10));
-        statusPanel.add(buttonsPanel);
-        statusPanel.add(Box.createVerticalStrut(10));
+        // Add components to the status panel
+        statusPanel.add(Box.createVerticalStrut(10));  // Add vertical space
+        statusPanel.add(statusLabel);  // Add status label to panel
+        statusPanel.add(Box.createVerticalStrut(5));  // Add vertical space
+        statusPanel.add(algorithmLabel);  // Add algorithm label to panel
+        statusPanel.add(Box.createVerticalStrut(10));  // Add vertical space
+        statusPanel.add(buttonsPanel);  // Add buttons panel to status panel
+        statusPanel.add(Box.createVerticalStrut(10));  // Add vertical space
 
-        add(boardPanel, BorderLayout.CENTER);
-        add(statusPanel, BorderLayout.SOUTH);
+        // Add the board and status panels to the main panel
+        add(boardPanel, BorderLayout.CENTER);  // Add board to the center of the panel
+        add(statusPanel, BorderLayout.SOUTH);  // Add status panel to the bottom of the panel
     }
 
     /**
@@ -77,9 +82,10 @@ public class TicTacToeView extends JPanel {
     public void updateBoard(char[][] board) {
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
+                // Update button text based on the board state
                 boardButtons[i][j].setText(board[i][j] == ' ' ? "" : String.valueOf(board[i][j]));
-                boardButtons[i][j].setBackground(null); // Reset background color
-                boardButtons[i][j].setEnabled(true); // Enable buttons for new game
+                boardButtons[i][j].setBackground(null);  // Reset background color
+                boardButtons[i][j].setEnabled(true);  // Enable buttons for new game
             }
         }
     }
@@ -88,14 +94,14 @@ public class TicTacToeView extends JPanel {
      * Sets the status label text.
      */
     public void setStatusLabel(String text) {
-        statusLabel.setText(text);
+        statusLabel.setText(text);  // Update status label text
     }
 
     /**
      * Sets the algorithm label text.
      */
     public void setAlgorithmLabel(String text) {
-        algorithmLabel.setText(text);
+        algorithmLabel.setText(text);  // Update algorithm label text
     }
 
     /**
@@ -110,7 +116,7 @@ public class TicTacToeView extends JPanel {
                 for (ActionListener al : boardButtons[i][j].getActionListeners()) {
                     boardButtons[i][j].removeActionListener(al);
                 }
-                boardButtons[i][j].addActionListener(e -> listener.accept(row, col));
+                boardButtons[i][j].addActionListener(e -> listener.accept(row, col));  // Add new listener
             }
         }
     }
@@ -119,21 +125,21 @@ public class TicTacToeView extends JPanel {
      * Adds a listener for the algorithm toggle button.
      */
     public void addAlgorithmToggleListener(ActionListener listener) {
-        toggleAlgorithmButton.addActionListener(listener);
+        toggleAlgorithmButton.addActionListener(listener);  // Add listener to toggle algorithm button
     }
 
     /**
      * Adds a listener for the new game button.
      */
     public void addNewGameListener(ActionListener listener) {
-        newGameButton.addActionListener(listener);
+        newGameButton.addActionListener(listener);  // Add listener to new game button
     }
     
     /**
      * Adds a listener for the back to main menu button.
      */
     public void addBackToMenuListener(ActionListener listener) {
-        backToMenuButton.addActionListener(listener);
+        backToMenuButton.addActionListener(listener);  // Add listener to back to menu button
     }    
     
     /**
@@ -141,11 +147,11 @@ public class TicTacToeView extends JPanel {
      */
     private boolean isWinningLine(char[] line, char player) {
         for (char cell : line) {
-            if (cell != player) {
+            if (cell != player) {  // If any cell doesn't match the player, it's not a win
                 return false;
             }
         }
-        return true;
+        return true;  // All cells match the player, it's a win
     }
 
     /**
@@ -157,7 +163,7 @@ public class TicTacToeView extends JPanel {
             // Check rows for a win
             if (isWinningLine(board[i], player)) {
                 for (int j = 0; j < BOARD_SIZE; j++) {
-                    boardButtons[i][j].setBackground(player == HUMAN ? Color.BLUE : Color.RED); // Yellow for player, Red for AI
+                    boardButtons[i][j].setBackground(player == HUMAN ? Color.BLUE : Color.RED);  // Color winning cells
                 }
             }
 
@@ -168,7 +174,7 @@ public class TicTacToeView extends JPanel {
             }
             if (isWinningLine(column, player)) {
                 for (int j = 0; j < BOARD_SIZE; j++) {
-                    boardButtons[j][i].setBackground(player == HUMAN ? Color.BLUE : Color.RED);
+                    boardButtons[j][i].setBackground(player == HUMAN ? Color.BLUE : Color.RED);  // Color winning cells
                 }
             }
         }
@@ -182,12 +188,12 @@ public class TicTacToeView extends JPanel {
         }
         if (isWinningLine(mainDiagonal, player)) {
             for (int i = 0; i < BOARD_SIZE; i++) {
-                boardButtons[i][i].setBackground(player == HUMAN ? Color.BLUE : Color.RED);
+                boardButtons[i][i].setBackground(player == HUMAN ? Color.BLUE : Color.RED);  // Color winning cells
             }
         }
         if (isWinningLine(antiDiagonal, player)) {
             for (int i = 0; i < BOARD_SIZE; i++) {
-                boardButtons[i][BOARD_SIZE - i - 1].setBackground(player == HUMAN ? Color.BLUE : Color.RED);
+                boardButtons[i][BOARD_SIZE - i - 1].setBackground(player == HUMAN ? Color.BLUE : Color.RED);  // Color winning cells
             }
         }
     }
@@ -199,7 +205,7 @@ public class TicTacToeView extends JPanel {
     public void disableBoard() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
-                boardButtons[i][j].setEnabled(false);
+                boardButtons[i][j].setEnabled(false);  // Disable all board buttons
             }
         }
     }
@@ -213,19 +219,19 @@ public class TicTacToeView extends JPanel {
         while (c != null && !(c instanceof JFrame)) {
             c = c.getParent();
         }
-        return (JFrame) c;
+        return (JFrame) c;  // Return the JFrame
     }
     
     public int getLastMoveRow() {
-        return lastMoveRow;
+        return lastMoveRow;  // Return the row of the last move
     }
 
     public int getLastMoveCol() {
-        return lastMoveCol;
+        return lastMoveCol;  // Return the column of the last move
     }
 
     public void setLastMove(int row, int col) {
-        this.lastMoveRow = row;
-        this.lastMoveCol = col;
+        this.lastMoveRow = row;  // Set the row of the last move
+        this.lastMoveCol = col;  // Set the column of the last move
     }
 }
