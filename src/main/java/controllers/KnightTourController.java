@@ -191,7 +191,7 @@ public class KnightTourController {
 			this.service.getUserManualMovement()[row][col] = this.service.getVisitedCount();
 
 			// check for win
-			if (this.service.getVisitedCount() == 5) {
+			if (this.service.getVisitedCount() == KnightTourConstant.BOARD_SIZE * KnightTourConstant.BOARD_SIZE) {
 				JOptionPane.showMessageDialog(view, "Congratulations! You completed the Knight's Tour.", "Victory",
 						JOptionPane.INFORMATION_MESSAGE);
 				// end time of game
